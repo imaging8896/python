@@ -29,7 +29,8 @@ def setup():
         assert os.path.isfile(SO_LOCAL_PATH), "Fail to adb pull API so file."
 
     cmd = "cd " + THIS_DIR + " && make"
-    pipe = subprocess.Popen(cmd, shell=True, cwd=THIS_DIR)
+    pipe = subprocess.Popen(cmd, shell=True, stdout=PIPE,
+                            stderr=PIPE, cwd=THIS_DIR)
     pipe.communicate()
     assert os.path.isfile(ADAPTER_BIN_LOCAL), "Fail to make adapter."
 
@@ -43,7 +44,7 @@ def exec_api(opt, timeout=0):
     cmd = "." + ADAPTER_BIN + " " + opt
     out, err = adb.exec_cmd(cmd, timeout)
     logger.debug("exec_api" + repr((cmd, out, err)))
-    assert not err, "Error when calling HCFS API."
+    assert not err, err
     return json.loads(out)
 
 
@@ -104,6 +105,14 @@ def reload_conf():
     return exec_api("reload")
 
 
+def set_sync_point():
+    return exec_api("setsync")
+
+
+def set_notify_server(address):
+    return exec_api("setnotify " + address)
+
+
 def set_hcfs_log_level(level=10):
     adb.exec_cmd("HCFSvol changelog " + str(level))
 
@@ -116,7 +125,8 @@ def cleanup():
             ADAPTER_BIN), "Fail to rm adapter bin."
 
     cmd = "make clean"
-    pipe = subprocess.Popen(cmd, shell=True, cwd=THIS_DIR)
+    pipe = subprocess.Popen(cmd, shell=True, stdout=PIPE,
+                            stderr=PIPE, cwd=THIS_DIR)
     pipe.communicate()
     assert not os.path.isfile(ADAPTER_BIN_LOCAL), "Fail to make clean adapter."
 
@@ -129,10 +139,11 @@ if __name__ == '__main__':
     import logging
     test_target_path = "/storage/emulated/0/DCIM/Camera"
     setup()
+    # print set_sync_point()
     # set_log_level(10)
     # adb.get_logcat("tmp/logcat")
     # adb.get_hcfs_log("tmp")
-    # print repr(stat())
+    print repr(stat())
     # print "cache " + repr(get_max_cache())
     # print "max pin " + repr(get_max_pin())
     # print "dirty " + repr(get_dirty())
