@@ -1,8 +1,9 @@
 from datetime import datetime
 import subprocess
 from subprocess import Popen, PIPE
-import adb
 import time
+
+import adb
 
 
 class HCFSLog(object):
@@ -11,7 +12,7 @@ class HCFSLog(object):
     2016-07-26 10:39:06.985782\tDebug: sync paused. pinning manager takes a break
     2016-07-26 10:39:07.183878\tChecking cache size 1391750822, 8237418240
 
-    We parse to [(date, time, log), ...] and store it to Logs object.
+    We parse to [(datetime, log), ...] and store it to HCFSLog object.
     time format : "%Y-%m-%d %H:%M:%S.%f"
     """
 
