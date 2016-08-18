@@ -52,10 +52,31 @@ def gen_large_file(file_path, size):
 def gen_small_file(file_path, size):
     size_1g = 1073741824
     assert size < size_1g, "Size too large, use dd instead."
-    cmd = "dd if=/dev/zero "
-    cmd = cmd + " of=" + file_path
+    cmd = "dd if=/dev/zero of=" + file_path
     cmd = cmd + "  bs=" + str(size) + " count=1"
     return adb.exec_cmd(cmd)
+
+
+def gen_1m_align_files(number, size, path):
+    size_1m = 1024 * 1024
+    count = size / size_1m  # 1M align
+    for i in range(1, number + 1):
+        file_name = str(i) + ".file"
+        file_path = os.path.join(path, file_name)
+        cmd = "dd if=/dev/zero of=" + file_path
+        cmd += " bs=" + str(size_1m) + " count=" + str(count)
+        adb.exec_cmd(cmd)
+
+
+def modify_files_1m_data(begin, end, path):
+    # modify 1M
+    size_1m = 1024 * 1024
+    for i in range(begin, end + 1):
+        file_name = str(i) + ".file"
+        file_path = os.path.join(path, file_name)
+        cmd = "dd conv=notrun if=/dev/urandom of=" + file_path
+        cmd += " bs=" + str(size_1m) + " count=1"
+        adb.exec_cmd(cmd)
 
 
 def fill_pictures(path, total_size):
@@ -91,7 +112,8 @@ def cleanup():
             BIN_PHONE_PATH), "Fail to clean adapter bin file."
 
     cmd = "make clean"
-    pipe = subprocess.Popen(cmd, shell=True, cwd=THIS_DIR)
+    pipe = subprocess.Popen(cmd, shell=True, stdout=PIPE,
+                            stderr=PIPE, cwd=THIS_DIR)
     pipe.communicate()
     assert not os.path.isfile(BIN_LOCAL_PATH), "Fail to make clean adapter."
 
