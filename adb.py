@@ -123,10 +123,14 @@ def disable_wifi(serialno=""):
     return exec_cmd("svc wifi disable", serialno)
 
 
+def start_app(pkg, activity, serialno=""):
+    cmd = "am start  " + pkg + "/." + activity
+    return exec_cmd(cmd, serialno)
+
+
 def is_file_available(path, serialno=""):
     cmd = "ls " + path + " | grep 'No such file or directory'"
     out, err = exec_cmd(cmd, serialno)
-    assert not err, err
     return True if not out else False
 
 # adb wait-for-device shell ...
