@@ -169,10 +169,10 @@ if __name__ == '__main__':
     json_result = content.split(", ")[2].split("=")[1]
 
     swift = Swift.via_token(url, HCFSConf.get_container(), token)
-    # HCFSConf.cleanup()
+    HCFSConf.cleanup()
 
     this_dir = os.path.abspath(os.path.dirname(__file__))
-    test_data_dir = os.path.join(this_dir, "test_data")
+    test_data_dir = os.path.join(this_dir, "..", "TestCases", "test_data")
     phone_id = "00f28ec4cb50a4f2"
     fsmgr = os.path.join(test_data_dir, "fsmgr")
     inodes = ["/sdcard/DCIM", "/sdcard/Download/1", "/data/data/2",
