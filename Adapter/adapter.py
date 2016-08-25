@@ -20,7 +20,7 @@ ADAPTER_BIN = "/data/" + ADAPTER_NAME
 
 
 def setup():
-    logger.info("adb setup")
+    logger.info("adapter setup")
     cleanup()
     assert os.environ['ANDROID_NDK'], "ANDROID_NDK environment var not found."
     assert adb.isAvailable(), "Adb device not found."
@@ -118,7 +118,7 @@ def set_hcfs_log_level(level=10):
 
 
 def cleanup():
-    logger.info("adb cleanup")
+    logger.info("adapter cleanup")
     if adb.is_file_available(ADAPTER_BIN):
         adb.rm_file(ADAPTER_BIN)
         assert not adb.is_file_available(
