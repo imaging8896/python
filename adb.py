@@ -74,9 +74,9 @@ def exec_cmd(cmd, serialno=""):
     return out, err
 
 
-def get_file(name, src, dest):
+def get_file(name, src, dest, serialno=""):
     cmd = "cp " + src + " /sdcard/Download/"
-    exec_cmd(cmd)
+    exec_cmd(cmd, serialno)
     # cmd = "cat  /data/local/tmp/" + name + " > " + dest
     # exec_cmd(cmd)
     pull("/sdcard/Download/" + name, dest)
