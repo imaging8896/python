@@ -1,70 +1,59 @@
-# Any object which wants to run on docker, must inherit from Dockerable
 import os
 import subprocess
-from subprocess import Popen, PIPE
 
 import config
-
-logger = config.get_logger().getChild(__name__)
 
 
 class Docker(object):
 
-    # volume:[(str,str,str) ...] =>(host src), dest, (options)
-    def __init__(self, name, image, cmd, args):
+    def __init__(self, name, image, shell_cmd, shell_args):
         if not os.path.exists("/var/run/docker.sock"):
             raise EnvironmentError("Need installed docker.")
-        self.name = name
-        self.volume = [("/etc/localtime", "/etc/localtime", "ro")]
-        self.image = image
-        self.cmd = cmd
-        self.args = args
-        self.tty = True
-        self.wd = ""
         self.logger = config.get_logger().getChild(__name__)
+        self.docker_cmd = "docker run --rm"
+        self.add_volume("/etc/localtime", "/etc/localtime", "ro")
+        self.set_tty()
 
-    def add_volume(self, vol):
-        self.logger.info("Add volume")
-        self.logger.debug("add_volume" + repr((vol)))
-        if not isinstance(vol, tuple):
-            raise TypeError("Input need 'tuple")
-        if len(vol) != 3:
-            raise ValueError("Input need '3 element' tuple")
-        if not vol[1]:
-            raise ValueError(
-                "second element (destnation source) shouldn't be empty")
-        self.volume.extend([vol])
+        self.name = name
+        self.image = image
+        self.shell_cmd = shell_cmd
+        self.shell_args = shell_args
 
-    def get_run_cmd(self):
-        cmd = ["docker run --rm "]
-        cmd.extend(["-t" if self.tty else ""])
-        cmd.extend(["--name=" + self.name])
-        for (hsrc, dsrc, opt) in self.volume:
-            vol = (hsrc + ":") if hsrc else ""
-            vol = vol + dsrc
-            vol = vol + ((":" + opt) if opt else "")
-            cmd.extend(["-v", vol])
-        if self.wd:
-            cmd.extend(["-w", self.wd])
-        cmd.extend([self.image, self.cmd, self.args])
-        return " ".join(cmd)
+    def add_volume(self, host_vol, cont_vol, permission=""):
+        self.logger.info("add_volume" + repr((host_vol, cont_vol, permission)))
+        vol_opt = "{0}:{1}:{2}".format(
+            host_vol, cont_vol, permission).strip(":")
+        self.docker_cmd += " -v " + vol_opt
+
+    def set_privileged(self):
+        self.logger.info("set_privileged")
+        self.docker_cmd += " --privileged"
+
+    def set_tty(self):
+        self.logger.info("set_tty")
+        self.docker_cmd += " -t"
+
+    def set_working_dir(self, path):
+        self.logger.info("set_working_dir " + path)
+        self.docker_cmd += " -w " + path
 
     def run(self):
         try:
-            logger.info("Run docker " + self.name)
-            cmd = self.get_run_cmd()
+            self.logger.info("Run docker " + self.name)
+            cmd = "{0} --name={1} {2} {3} {4}".format(
+                self.docker_cmd, self.name, self.image, self.shell_cmd, self.shell_args)
+            self.logger.info("run" + repr((cmd)))
             subprocess.call(cmd, shell=True)
-            logger.debug("run" + repr((cmd)))
         except Exception as e:
             self.cleanup()
             print e
 
     def terminate(self):
-        logger.info("Terminate docker " + self.name)
+        self.logger.info("Terminate docker " + self.name)
         cmd = "sudo docker rm -f " + self.name
         subprocess.call(cmd, shell=True)
-        logger.debug("terminate" + repr((cmd)))
+        self.logger.debug("terminate" + repr((cmd)))
 
     def cleanup(self):
-        logger.info("cleanup " + self.name)
+        self.logger.info("cleanup " + self.name)
         self.terminate()
