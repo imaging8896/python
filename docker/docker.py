@@ -29,9 +29,14 @@ class Docker(object):
         self.logger.info("set_privileged")
         self.docker_cmd += " --privileged"
 
+    # TODO default set, HOW to disable
     def set_tty(self):
         self.logger.info("set_tty")
         self.docker_cmd += " -t"
+
+    def set_interactive(self):
+        self.logger.info("set_interactive")
+        self.docker_cmd += " -i"
 
     def set_working_dir(self, path):
         self.logger.info("set_working_dir " + path)
