@@ -1,0 +1,41 @@
+<html lang="en">
+  <head>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="795577377875-1tj6olgu34bqi7afnnmavvm5hj5vh1tr.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+  </head>
+  <body>
+    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+    <script>
+      function sendToken(id_token) {
+        var xhr = new XMLHttpRequest();
+        var url = '/token';
+        var data = 'token=' + id_token;
+
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhr.setRequestHeader("Content-length", data.length);
+        xhr.setRequestHeader("Connection", "close");
+        xhr.send(data);
+      };
+      function onSignIn(googleUser) {
+        // Useful data for your client-side scripts:
+        var profile = googleUser.getBasicProfile();
+        // Don't send this directly to your server!
+        document.write("ID: " + profile.getId() + "<br>")
+        document.write("Name: " + profile.getName() + "<br>");
+        document.write("Image URL: " + profile.getImageUrl() + "<br>");
+        document.write("Email: " + profile.getEmail() + "<br>");
+
+        // The ID token you need to pass to your backend:
+        var id_token = googleUser.getAuthResponse().id_token;
+        var access_token = googleUser.getAuthResponse().access_token;
+    
+        document.write('<div id="token">' + id_token + '</div>');
+        document.write('<div id="access_token">' + access_token + '</div>');
+        sendToken(id_token);
+      };
+
+    </script>
+  </body>
+</html>

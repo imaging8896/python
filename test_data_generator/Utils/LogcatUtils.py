@@ -2,8 +2,6 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 import time
 
-from adb.factory import *
-
 
 class Logcat(object):
     """
@@ -33,7 +31,7 @@ class Logcat(object):
                 return
         self.logs = new_logs
 
-    def find_until(self, pattern, timeout_sec=300, interval=1):
+    def find_until(self, pattern, timeout_sec=300, interval=10):
         for _ in range(1, timeout_sec / interval):
             for timestamp, _, log in self.logs:
                 if pattern in log:
@@ -46,14 +44,13 @@ class Logcat(object):
         # parse to [(datetime object, log string), ...]
         # Seperate by line
         lines = logs_str.split("\r\n")
-        # 10-07 09:57:37.346  4737  5414 W TeraService: TeraApiServer(run): eventID = 1
-        # Seperate by tag
-        lines = [tuple(line.split(self.tag)) for line in lines if line]
+        # Seperate by ":". Keep log which matches "time, tag and type:log"
+        lines = [tuple(line.split(" : ")) for line in lines if line]
         result = []
         for forepart, log in [pair for pair in lines if len(pair) == 2]:
-            # 08-15 08:36:43.657  4394  5658 W
+            # 08-15 08:36:43.657  4394  5658 W HopeBay
             pieces = filter(None, forepart.split(" "))
-            if len(pieces) != 5:
+            if len(pieces) != 6:
                 continue
             timestamp = pieces[0] + " " + pieces[1]
             level = pieces[4]
@@ -64,7 +61,11 @@ class Logcat(object):
         return result
 
     def get_raw_logcat(self):
-        out, err = adb.logcat(self.tag)
+        cmd = "adb logcat -d"
+        if self.tag:
+            cmd += " -s " + self.tag
+        process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        out, err = process.communicate()
         if err:
             raise Exception(err)
         return out
@@ -78,7 +79,10 @@ class Logcat(object):
 
 
 def clear_logcat():
-    return adb.clear_logcat()
+    cmd = "adb logcat -c "
+    process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    out, err = process.communicate()
+    return out, err
 
 
 def create_logcat_obj(tag):
@@ -87,8 +91,8 @@ def create_logcat_obj(tag):
 
 if __name__ == '__main__':
     import time
-    SYNC_FINISH_PATTERN = "eventID"
-    logs = create_logcat_obj("TeraService")
+    SYNC_FINISH_PATTERN = "connect"
+    logs = create_logcat_obj("HopeBay")
     print "len = " + repr(len(logs.logs))
     print logs.find_until(SYNC_FINISH_PATTERN)
     # print "-" * 40
