@@ -22,6 +22,9 @@ class Reporter(object):
         adb.pull_as_root("/data/hcfs_android_log", hcfs_android_log + suffix)
         logcat = os.path.join(self.log_save_dir, "logcat-")
         adb.get_logcat(logcat + suffix)
+        dmesg = os.path.join(self.log_save_dir, "dmesg-")
+        adb.exec_shell("dmesg > " + dmesg + suffix)
+
         for i, log in enumerate(self.addition_log):
             log_name = os.path.basename(log) + str(i)
             log_dest = os.path.join(self.log_save_dir, log_name + "-")

@@ -50,7 +50,7 @@ class Docker(object):
             self.logger.info("run" + repr((cmd)))
             subprocess.call(cmd, shell=True)
         except Exception as e:
-            self.cleanup()
+            self.terminate()
             print e
 
     def terminate(self):
@@ -58,7 +58,3 @@ class Docker(object):
         cmd = "sudo docker rm -f " + self.name
         subprocess.call(cmd, shell=True)
         self.logger.debug("terminate" + repr((cmd)))
-
-    def cleanup(self):
-        self.logger.info("cleanup " + self.name)
-        self.terminate()
