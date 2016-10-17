@@ -2,6 +2,12 @@ import config
 
 
 def tuple_yield(values, specs):
+    """
+    >>> next(tuple_yield((1, 2), (int, int)))
+    (1, <type 'int'>)
+    >>> next(tuple_yield(((1,), 2), ((int,), int)))
+    ((1,), (<type 'int'>,))
+    """
     if len(values) != len(specs):
         raise ValueError("Values length doesn't match specs.")
     for i, spec in enumerate(specs):

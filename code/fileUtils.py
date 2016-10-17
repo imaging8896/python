@@ -150,7 +150,6 @@ class FileUtils(object):
 if __name__ == '__main__':
     # file_utils = FileUtils()
     # print file_utils.get_file_stat("/home/test")
-    import wrapper
     file_utils = FileUtils(wrapper.ADBCmdWrapper("Ted"))
     print file_utils.get_file_stat("/storage/emulated/0/1.f")
     file_utils.makedirs("/storage/emulated/0/a/b/c/d")
