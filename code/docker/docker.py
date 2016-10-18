@@ -45,6 +45,8 @@ class Docker(object):
     def run(self):
         try:
             self.logger.info("Run docker " + self.name)
+            # make gen file permission free
+            os.umask(000)
             cmd = "{0} --name={1} {2} {3} {4}".format(
                 self.docker_cmd, self.name, self.image, self.shell_cmd, self.shell_args)
             self.logger.info("run" + repr((cmd)))

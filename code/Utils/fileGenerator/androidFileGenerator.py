@@ -1,27 +1,32 @@
 import os
+from os.path import isfile as fileExists
+from os.path import join as pathJoin
+from os.path import dirname
+from os.path import abspath
 import subprocess
 from subprocess import Popen, PIPE
 
 import makeUtils
 import config
 from ..adb.factory import *
+from ..dockerBuildUtils import dockerBuildUtils
 
 # use /dev/zero is much faster than /dev/urandom
 
 logger = config.get_logger().getChild(__name__)
 
-THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+THIS_DIR = abspath(dirname(__file__))
 
-FG_BIN = os.path.join(THIS_DIR, "FileGen")
+FG_BIN = pathJoin(THIS_DIR, "FileGen")
 FG_PHONE_BIN = "/data/FileGen"
 
 
-SINGLE_FG_BIN = os.path.join(THIS_DIR, "SingleFileGen")
+SINGLE_FG_BIN = pathJoin(THIS_DIR, "SingleFileGen")
 S_FG_PHONE_BIN = "/data/SingleFileGen"
 
 RANDOM_FILE_NAME = "random"
 RANDOM_FILE_PHONE = "/data/random"
-RANDOM_FILE = os.path.join(THIS_DIR, "random")
+RANDOM_FILE = pathJoin(THIS_DIR, "random")
 
 
 def setup():
@@ -34,16 +39,14 @@ def setup():
 
 
 def check_build_env():
-    if not os.environ['ANDROID_NDK']:
-        raise EnvironmentError("ANDROID_NDK environment var not found.")
     adb.check_availability()
 
 
 def build_file_generator():
-    makeUtils.make(THIS_DIR)
-    if not os.path.isfile(FG_BIN):
+    dockerBuildUtils.make_ndk_build(THIS_DIR)
+    if not fileExists(FG_BIN):
         raise Exception("Fail to make FileGen")
-    if not os.path.isfile(SINGLE_FG_BIN):
+    if not fileExists(SINGLE_FG_BIN):
         raise Exception("Fail to make SingleFileGen")
 
 
@@ -57,7 +60,7 @@ def install_file_generator():
 
 
 def prepare_file_pattern():
-    if not os.path.isfile(RANDOM_FILE):
+    if not fileExists(RANDOM_FILE):
         with open(RANDOM_FILE, 'w') as rand_file:
             for i in range(1, 1):
                 f.write(os.urandom(1048576))
@@ -148,9 +151,9 @@ def uninstall_file_generator_from_phone():
 
 def make_clean():
     makeUtils.make(THIS_DIR, "clean")
-    if os.path.isfile(FG_BIN):
+    if fileExists(FG_BIN):
         raise Exception("Fail to make clean FileGen")
-    if os.path.isfile(SINGLE_FG_BIN):
+    if fileExists(SINGLE_FG_BIN):
         raise Exception("Fail to make clean SingleFileGen")
 
 if __name__ == '__main__':

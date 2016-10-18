@@ -1,4 +1,8 @@
 import os
+from os.path import isfile as fileExists
+from os.path import join as pathJoin
+from os.path import dirname
+from os.path import abspath
 import subprocess
 from subprocess import Popen, PIPE
 import json
@@ -6,16 +10,17 @@ import json
 import makeUtils
 import config
 from ..adb.factory import *
+from ..dockerBuildUtils import dockerBuildUtils
 
 logger = config.get_logger().getChild(__name__)
 
-THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+THIS_DIR = abspath(dirname(__file__))
 
 HCFS_LIB_PHONE_PATH = "/system/lib64/libHCFS_api.so"
 HCFS_LIB = THIS_DIR + "/libHCFS_api.so"
 
 ADAPTER_NAME = "adapter"
-ADAPTER_BIN_LOCAL = THIS_DIR + "/" + ADAPTER_NAME
+ADAPTER_BIN_LOCAL = pathJoin(THIS_DIR, ADAPTER_NAME)
 ADAPTER_BIN = "/data/" + ADAPTER_NAME
 
 
@@ -29,20 +34,18 @@ def setup():
 
 
 def check_build_env():
-    if not os.environ['ANDROID_NDK']:
-        raise EnvironmentError("ANDROID_NDK environment var not found.")
     adb.check_availability()
 
 
 def get_hcfs_lib_from_phone():
     adb.pull_as_root(HCFS_LIB_PHONE_PATH, HCFS_LIB)
-    if not os.path.isfile(HCFS_LIB):
+    if not fileExists(HCFS_LIB):
         raise Exception("Fail to adb pull API so file.")
 
 
 def build_hcfs_adapter():
-    makeUtils.make(THIS_DIR)
-    if not os.path.isfile(ADAPTER_BIN_LOCAL):
+    dockerBuildUtils.make_ndk_build(THIS_DIR)
+    if not fileExists(ADAPTER_BIN_LOCAL):
         raise Exception("Fail to make adapter.")
 
 
@@ -153,15 +156,13 @@ def uninstall_hcfs_adapter_from_phone():
 
 def make_clean():
     makeUtils.make(THIS_DIR, "clean")
-    if os.path.isfile(ADAPTER_BIN_LOCAL):
+    if fileExists(ADAPTER_BIN_LOCAL):
         raise Exception("Fail to make clean adapter")
 
 
 def clean_env():
-    if os.path.isfile(HCFS_LIB):
+    if fileExists(HCFS_LIB):
         os.remove(HCFS_LIB)
-        if os.path.isfile(HCFS_LIB):
-            raise Exception("Fail to clean hcfs lib.")
 
 
 if __name__ == '__main__':

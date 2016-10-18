@@ -1,13 +1,17 @@
 import os
+from os.path import isfile as fileExists
+from os.path import dirname
+from os.path import abspath
 from subprocess import Popen, PIPE
 
 import config
 import makeUtils
 from ..adb.factory import *
+from ..dockerBuildUtils import dockerBuildUtils
 
 logger = config.get_logger().getChild(__name__)
 
-THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+THIS_DIR = abspath(dirname(__file__))
 
 BIN_NAME = "socketToMgmtApp"
 BIN_LOCAL_PATH = THIS_DIR + "/socketToMgmtApp"
@@ -26,14 +30,12 @@ def setup():
 
 
 def check_build_env():
-    if not os.environ['ANDROID_NDK']:
-        raise EnvironmentError("ANDROID_NDK environment var not found.")
     adb.check_availability()
 
 
 def build_socket_utils():
-    makeUtils.make(THIS_DIR)
-    if not os.path.isfile(BIN_LOCAL_PATH):
+    dockerBuildUtils.make_ndk_build(THIS_DIR)
+    if not fileExists(BIN_LOCAL_PATH):
         raise Exception("Fail to make.")
 
 
@@ -70,7 +72,7 @@ def uninstall_socket_utils_from_phone():
 
 def make_clean():
     makeUtils.make(THIS_DIR, "clean")
-    if os.path.isfile(BIN_LOCAL_PATH):
+    if fileExists(BIN_LOCAL_PATH):
         raise Exception("Fail to make clean")
 
 
