@@ -6,4 +6,4 @@ adapter: API_adapter.c libHCFS_api.so
 	$(CC) $(CFLAGS) -LlibHCFS_api.so -Wall -o adapter API_adapter.c
 
 clean:
-	rm adapter
+	rm -f adapter

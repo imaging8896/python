@@ -30,32 +30,37 @@ def setup():
 
 
 def check_build_env():
+    logger.info("check_build_env")
     adb.check_availability()
 
 
 def build_socket_utils():
+    logger.info("build_socket_utils")
     dockerBuildUtils.make_ndk_build(THIS_DIR)
     if not fileExists(BIN_LOCAL_PATH):
         raise Exception("Fail to make.")
 
 
 def install_socket_utils_to_phone():
+    logger.info("install_socket_utils_to_phone")
     adb.push_as_root(BIN_LOCAL_PATH, BIN_PHONE_PATH)
     if not android_fileUtils.is_existed(BIN_PHONE_PATH):
         raise Exception("Fail to adb push bin file.")
 
 
 def send_connected_event():
-    return send_event(EVENT_CONNECTED)
+    send_event(EVENT_CONNECTED)
 
 
 def refresh_token():
-    return send_event(EVENT_TOKEN_EXPIRED)
+    send_event(EVENT_TOKEN_EXPIRED)
 
 
 def send_event(event):
-    cmd = ".{0} {1}".format(BIN_PHONE_PATH, event)
-    return adb.exec_shell(cmd)
+    cmd = "su 0 .{0} {1}".format(BIN_PHONE_PATH, event)
+    out, _ = adb.exec_shell(cmd)
+    if out:
+        raise Exception(out)
 
 
 def cleanup():
@@ -65,12 +70,14 @@ def cleanup():
 
 
 def uninstall_socket_utils_from_phone():
+    logger.info("uninstall_socket_utils_from_phone")
     android_fileUtils.rm(BIN_PHONE_PATH)
     if android_fileUtils.is_existed(BIN_PHONE_PATH):
         raise Exception("Fail to rm socket utils bin in phone.")
 
 
 def make_clean():
+    logger.info("make_clean")
     makeUtils.make(THIS_DIR, "clean")
     if fileExists(BIN_LOCAL_PATH):
         raise Exception("Fail to make clean")

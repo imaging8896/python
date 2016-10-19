@@ -10,11 +10,14 @@ from ..adb.factory import *
 from ..dockerBuildUtils import dockerBuildUtils
 import config
 
+THIS_DIR = abspath(dirname(__file__))
+APK = pathJoin(THIS_DIR, "app.apk")
+
 
 class BaseApp(object):
 
     def __init__(self, proj, package):
-        this_dir = abspath(dirname(__file__))
+
         self.PROJ_DIR = proj
 
         self.logger = config.get_logger().getChild(self.__class__.__name__)
@@ -28,8 +31,7 @@ class BaseApp(object):
 
     def build_release(self):
         self.logger.info("build_release")
-        this_dir = abspath(dirname(__file__))
-        self.apk = pathJoin(this_dir, "app.apk")
+        self.apk = APK
         dockerBuildUtils.gradle_build(self.PROJ_DIR, self.apk)
 
     def uninstall(self):

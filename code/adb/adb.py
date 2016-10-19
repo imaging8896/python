@@ -10,17 +10,15 @@ class ADB(object):
 
     def __init__(self, serial_num):
         self.serial_num = serial_num
-        self.check_availability()
         THIS_DIR = os.path.abspath(os.path.dirname(__file__))
         report_dir = os.path.join(THIS_DIR, "report")
         if not os.path.exists(report_dir):
             os.makedirs(report_dir)
         self.log_file = os.path.join(report_dir, "ADB")
+        self.check_availability()
 
     def is_available(self):
-        cmd = "adb devices"
-        process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-        out, err = process.communicate()
+        out, err = self.exec_adb("devices")
         if "no devices" in err:
             return False
         if self.serial_num and self.serial_num not in out:
@@ -120,13 +118,16 @@ class ADB(object):
     def grant_permission(self, pkg, permission):
         return self.exec_shell("pm grant {0} {1}".format(pkg, permission))
 
-    def exec_shell(self, cmd):
-        return self.exec_adb("shell " + cmd)
+    def exec_shell(self, cmd, shutup=True):
+        return self.exec_adb("shell " + cmd, shutup)
 
-    def exec_adb(self, cmd):
+    def exec_adb(self, cmd, shutup=True):
         with open(self.log_file, "a") as log_file:
             cmd = self.__get_cmd_prefix() + " " + cmd
-            process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+            if shutup:
+                process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+            else:
+                process = Popen(cmd, shell=True)
             out, err = process.communicate()
             msg = "{0} : {1} : ({2},{3})\n".format(
                 str(datetime.now()), cmd, out.rstrip(), err.rstrip())

@@ -6,4 +6,4 @@ socketToMgmtApp: socketToMgmtApp.c
 	$(CC) $(CFLAGS) -Wall -o socketToMgmtApp socketToMgmtApp.c
 
 clean:
-	rm socketToMgmtApp
+	rm -f socketToMgmtApp

@@ -1,4 +1,7 @@
 import os
+from os.path import join as pathJoin
+from os.path import dirname
+from os.path import basename
 
 
 def all_casings(input_string):
@@ -7,9 +10,13 @@ def all_casings(input_string):
     True
     >>> set(all_casings("")) == set([""])
     True
-    >>> set(all_casings(None)) == set([""])
-    True
+    >>> set(all_casings(None))
+    Traceback (most recent call last):
+        File "<stdin>", line 1, in ?
+    ValueError: Argument should have value.
     """
+    if input_string is None:
+        raise ValueError("Argument should have value.")
     if not input_string:
         yield ""
     else:
@@ -21,6 +28,27 @@ def all_casings(input_string):
             for sub_casing in all_casings(input_string[1:]):
                 yield first.lower() + sub_casing
                 yield first.upper() + sub_casing
+
+
+def get_pathes_all_casings_file_name(file):
+    """
+    >>> set(get_pathes_all_casings_file_name("/a/b/c/abc")) == set(["/a/b/c/abc", "/a/b/c/Abc", "/a/b/c/aBc", "/a/b/c/abC", "/a/b/c/ABc", "/a/b/c/AbC", "/a/b/c/aBC", "/a/b/c/ABC"])
+    True
+    >>> set(get_pathes_all_casings_file_name("abc")) == set(["abc", "Abc", "aBc", "abC", "ABc", "AbC", "aBC", "ABC"])
+    True
+    >>> set(get_pathes_all_casings_file_name(""))
+    Traceback (most recent call last):
+        File "<stdin>", line 1, in ?
+    ValueError: Argument should have value.
+    >>> set(get_pathes_all_casings_file_name(None))
+    Traceback (most recent call last):
+        File "<stdin>", line 1, in ?
+    ValueError: Argument should have value.
+    """
+    if not file:
+        raise ValueError("Argument should have value.")
+    for case in all_casings(basename(file)):
+        yield pathJoin(dirname(file), case)
 
 
 def list_abspathes_filter_name(directory, filter_func=None):
@@ -46,11 +74,14 @@ def list_abspathes_filter_name(directory, filter_func=None):
     # return [(os.path.join(directory, x), x) for x in os.listdir(directory)]
 
 
-def file_name(path):
-    return os.path.basename(path)
-
+def random_str(length):
+    import random
+    import string
+    return ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(length))
 
 # filter function
+
+
 def not_startswith(word):
     """
     >>> not_startswith("abc")("abcd")

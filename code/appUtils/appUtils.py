@@ -19,15 +19,19 @@ def run_release_app_instrument_test(app, instrument_builder, report_path):
     app.build_release()
     app.uninstall()
     app.install()
-    app.acquire_permissions()
-    instrument_builder.add_test_runner(app.package + "/" + TEST_RUNNER)
-    am.run_instrument(instrument_builder)
-    app.get_report(report_path)
+    run_instrument_test(app, instrument_builder, report_path)
     app.uninstall()
     app.clear_apk()
 
 
+def run_instrument_test(app, instrument_builder, report_path):
+    app.acquire_permissions()
+    instrument_builder.add_test_runner(app.package + "/" + TEST_RUNNER)
+    am.run_instrument(instrument_builder)
+    app.get_report(report_path)
+
 ###################### private #########################
+
 
 def check_if_valid_app(test_obj):
     if not issubclass(type(test_obj), BaseApp):

@@ -3,7 +3,7 @@ from os.path import exists as dirExists
 from os.path import join as pathJoin
 from os.path import basename
 from datetime import datetime
-from shutil import copyfile
+from shutil import move
 
 from adb.factory import adb
 
@@ -31,4 +31,4 @@ class Reporter(object):
         for i, log in enumerate(self.addition_log):
             log_name = basename(log) + str(i)
             log_dest = pathJoin(self.log_save_dir, log_name + "-")
-            copyfile(log, log_dest + suffix)
+            move(log, log_dest + suffix)

@@ -16,7 +16,7 @@ class ActivityManager(object):
         if not callable(getattr(instrument_builder, "get_cmd", None)):
             raise Exception("instrument_builder's 'get_cmd' is not callable")
         cmd = instrument_builder.get_cmd()
-        return self.adb.exec_shell(cmd)
+        return self.adb.exec_shell(cmd, shutup=False)
 
 
 class InstrumentBuilder(object):

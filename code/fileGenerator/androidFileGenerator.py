@@ -39,10 +39,12 @@ def setup():
 
 
 def check_build_env():
+    logger.info("check_build_env")
     adb.check_availability()
 
 
 def build_file_generator():
+    logger.info("build_file_generator")
     dockerBuildUtils.make_ndk_build(THIS_DIR)
     if not fileExists(FG_BIN):
         raise Exception("Fail to make FileGen")
@@ -51,6 +53,7 @@ def build_file_generator():
 
 
 def install_file_generator():
+    logger.info("install_file_generator")
     adb.push_as_root(FG_BIN, FG_PHONE_BIN)
     if not android_fileUtils.is_existed(FG_PHONE_BIN):
         raise Exception("Fail to adb push FileGen bin file.")
@@ -60,6 +63,7 @@ def install_file_generator():
 
 
 def prepare_file_pattern():
+    logger.info("prepare_file_pattern")
     if not fileExists(RANDOM_FILE):
         with open(RANDOM_FILE, 'w') as rand_file:
             for i in range(1, 1):
@@ -70,13 +74,14 @@ def prepare_file_pattern():
 
 
 def single_file_gen(path, size):
-    cmd = ".{0} {1} {2}".format(S_FG_PHONE_BIN, path, str(size))
-    return adb.exec_shell("su 0 " + cmd)
+    cmd = "su 0 .{0} {1} {2}".format(S_FG_PHONE_BIN, path, str(size))
+    return adb.exec_shell(cmd)
 
 
 def files_gen(num, size, path):
-    cmd = ".{0} {1} {2} {3}".format(FG_PHONE_BIN, str(num), str(size), path)
-    return adb.exec_shell("su 0 " + cmd)
+    cmd = "su 0 .{0} {1} {2} {3}".format(
+        FG_PHONE_BIN, str(num), str(size), path)
+    return adb.exec_shell(cmd)
 
 
 def gen_large_file(file_path, size, in_stream="/dev/zero"):
@@ -141,6 +146,7 @@ def cleanup():
 
 
 def uninstall_file_generator_from_phone():
+    logger.info("uninstall_file_generator_from_phone")
     android_fileUtils.rm(FG_PHONE_BIN)
     if android_fileUtils.is_existed(FG_PHONE_BIN):
         raise Exception("Fail to clean FileGen bin file.")
@@ -150,6 +156,7 @@ def uninstall_file_generator_from_phone():
 
 
 def make_clean():
+    logger.info("make_clean")
     makeUtils.make(THIS_DIR, "clean")
     if fileExists(FG_BIN):
         raise Exception("Fail to make clean FileGen")

@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 	int event_id = strtol(argv[1], &ptr, 10);
 	int server_fd = get_server_conn();
 	if (server_fd < 0) {
-		fprintf(stderr, "Fail to get server socket error code:%d\n", server_fd);
+		fprintf(stdout, "Fail to get server socket error code:%d\n", server_fd);
 		exit(1);
 	}
 	
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 	sprintf(event, "[{\"event_id\":%d}]\n", event_id);
 	int ret_code = send_event_to_server(server_fd, event);
 	if (ret_code < 0) {
-		fprintf(stderr, "Fail to send event msg to server error code:%d\n", ret_code);
+		fprintf(stdout, "Fail to send event msg to server error code:%d\n", ret_code);
 		exit(1);
 	}
     return 0;

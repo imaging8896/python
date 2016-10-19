@@ -43,5 +43,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         raise Exception("Invalid argument number need 1 but " + str(sys.argv))
     set_ndk_env_var()
+    # make gen file permission free
+    os.umask(000)
     makeUtils.make(sys.argv[1], "clean")
     makeUtils.make(sys.argv[1])

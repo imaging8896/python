@@ -28,3 +28,4 @@ if __name__ == "__main__":
     apk = gradleUtils.build_release(sys.argv[1])
     os.chdir(sys.argv[1])
     move(apk, sys.argv[2])
+    gradleUtils.clean(sys.argv[1])

@@ -34,22 +34,26 @@ def setup():
 
 
 def check_build_env():
+    logger.info("check_build_env")
     adb.check_availability()
 
 
 def get_hcfs_lib_from_phone():
+    logger.info("get_hcfs_lib_from_phone")
     adb.pull_as_root(HCFS_LIB_PHONE_PATH, HCFS_LIB)
     if not fileExists(HCFS_LIB):
         raise Exception("Fail to adb pull API so file.")
 
 
 def build_hcfs_adapter():
+    logger.info("build_hcfs_adapter")
     dockerBuildUtils.make_ndk_build(THIS_DIR)
     if not fileExists(ADAPTER_BIN_LOCAL):
         raise Exception("Fail to make adapter.")
 
 
 def install_hcfs_adapter_to_phone():
+    logger.info("install_hcfs_adapter_to_phone")
     adb.push_as_root(ADAPTER_BIN_LOCAL, ADAPTER_BIN)
     if not android_fileUtils.is_existed(ADAPTER_BIN):
         raise Exception("Fail to adb push adapter bin.")
@@ -149,18 +153,21 @@ def cleanup():
 
 
 def uninstall_hcfs_adapter_from_phone():
+    logger.info("uninstall_hcfs_adapter_from_phone")
     android_fileUtils.rm(ADAPTER_BIN)
     if android_fileUtils.is_existed(ADAPTER_BIN):
         raise Exception("Fail to rm adapter bin in phone.")
 
 
 def make_clean():
+    logger.info("make_clean")
     makeUtils.make(THIS_DIR, "clean")
     if fileExists(ADAPTER_BIN_LOCAL):
         raise Exception("Fail to make clean adapter")
 
 
 def clean_env():
+    logger.info("clean_env")
     if fileExists(HCFS_LIB):
         os.remove(HCFS_LIB)
 

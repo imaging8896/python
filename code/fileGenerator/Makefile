@@ -13,5 +13,5 @@ SingleFileGen: SingleFileGenerator.c
 
 
 clean:
-	rm FileGen
-	rm SingleFileGen
+	rm -f FileGen
+	rm -f SingleFileGen
