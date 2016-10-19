@@ -126,9 +126,10 @@ class ADB(object):
             cmd = self.__get_cmd_prefix() + " " + cmd
             if shutup:
                 process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+                out, err = process.communicate()
             else:
-                process = Popen(cmd, shell=True)
-            out, err = process.communicate()
+                subprocess.call(cmd, shell=True)
+                out, err = "", ""
             msg = "{0} : {1} : ({2},{3})\n".format(
                 str(datetime.now()), cmd, out.rstrip(), err.rstrip())
             log_file.write(msg)

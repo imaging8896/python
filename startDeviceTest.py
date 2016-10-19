@@ -6,11 +6,14 @@ Created on 2016.10.16
 
 import unittest
 import doctest
-from code import tedUtils, FuncSpec
+from code.aliasUtils import aliasUtils
 
 
 if __name__ == '__main__':
+    aliasUtils.setup()
+
     suite = doctest.DocTestSuite()
-    suite.addTests(doctest.DocTestSuite(tedUtils))
-    suite.addTests(doctest.DocTestSuite(FuncSpec))
+    suite.addTests(doctest.DocTestSuite(aliasUtils))
     unittest.TextTestRunner(verbosity=2).run(suite)
+
+    aliasUtils.cleanup()
