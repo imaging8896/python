@@ -59,12 +59,12 @@ def get_alias_inos(file):
     16
     >>> get_alias_inos("")
     Traceback (most recent call last):
-        File "<stdin>", line 1, in ?
+        ...
     ValueError: Empty path is not allowed.
     >>> get_alias_inos("/storage/emulated/0/Music1")
     Traceback (most recent call last):
-        File "<stdin>", line 1, in ?
-    ValueError: invalid literal for int() with base 10: '/storage/emulated/0/Music1:No such file or directory'
+        ...
+    ValueError: invalid literal for int() with base 10: '/storage/emulated/0/music1:No such file or directory'
     """
     if not file:
         raise ValueError("Empty path is not allowed.")

@@ -26,7 +26,7 @@ class Reporter(object):
         logcat = pathJoin(self.log_save_dir, "logcat-")
         adb.get_logcat(logcat + suffix)
         dmesg = pathJoin(self.log_save_dir, "dmesg-")
-        adb.exec_shell("dmesg > " + dmesg + suffix)
+        adb.exec_shell("dmesg > " + dmesg + suffix, not_log=True)
 
         for i, log in enumerate(self.addition_log):
             log_name = basename(log) + str(i)

@@ -90,11 +90,12 @@ class ADB(object):
 
     def get_logcat(self, path, tag=None):
         tag_opt = "-s " + tag if tag else ""
-        self.exec_adb("logcat -d {0} | tee {1}".format(tag_opt, path))
+        self.exec_adb(
+            "logcat -d {0} | tee {1}".format(tag_opt, path), not_log=True)
 
     def logcat(self, tag=None):
         tag_opt = "-s " + tag if tag else ""
-        return self.exec_adb("logcat -d {0}".format(tag_opt))
+        return self.exec_adb("logcat -d {0}".format(tag_opt), not_log=True)
 
     def clear_logcat(self):
         return self.exec_adb("logcat -c")
@@ -118,10 +119,10 @@ class ADB(object):
     def grant_permission(self, pkg, permission):
         return self.exec_shell("pm grant {0} {1}".format(pkg, permission))
 
-    def exec_shell(self, cmd, shutup=True):
+    def exec_shell(self, cmd, shutup=True, not_log=False):
         return self.exec_adb("shell " + cmd, shutup)
 
-    def exec_adb(self, cmd, shutup=True):
+    def exec_adb(self, cmd, shutup=True, not_log=False):
         with open(self.log_file, "a") as log_file:
             cmd = self.__get_cmd_prefix() + " " + cmd
             if shutup:
@@ -130,9 +131,10 @@ class ADB(object):
             else:
                 subprocess.call(cmd, shell=True)
                 out, err = "", ""
-            msg = "{0} : {1} : ({2},{3})\n".format(
-                str(datetime.now()), cmd, out.rstrip(), err.rstrip())
-            log_file.write(msg)
+            if not not_log:
+                msg = "{0} : {1} : ({2},{3})\n".format(
+                    str(datetime.now()), cmd, out.rstrip(), err.rstrip())
+                log_file.write(msg)
         return out, err
 
     def __get_cmd_prefix(self):

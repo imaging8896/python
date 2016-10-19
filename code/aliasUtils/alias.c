@@ -16,7 +16,8 @@ int32_t main(int32_t argc, char **argv)
     exit(1);
   }
   char* path = argv[1];
-  char* fileName = basename(path);
+  char* fileName = strstr(path, basename(path));
+
   struct stat statBuf;
   
   int i;
@@ -47,7 +48,7 @@ int32_t main(int32_t argc, char **argv)
      if(isPassCombination == 1) {
 	   statRet = stat(path, &statBuf);
        if(statRet == 0)
-         fprintf(stdout, "%d\n", statBuf.st_ino);
+         fprintf(stdout, "%ld\n", statBuf.st_ino);
        else {
          fprintf(stdout, "%s:%s", path, strerror(errno));
          return -1;
