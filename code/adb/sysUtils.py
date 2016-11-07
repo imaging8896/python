@@ -45,6 +45,12 @@ class AndroidSystemUtils(object):
 # VmallocUsed:       94800 kB
 # VmallocChunk:   251487324 kB
 
+    def get_total_mem(self):
+        return self.get_memory(MEM_TOTAL)
+
+    def get_free_mem(self):
+        return self.get_memory(MEM_FREE)
+
     def get_memory(self, key):
         cmd = "cat /proc/meminfo | grep " + key
         out, err = self.cmd_wrapper.exec_cmd(cmd)

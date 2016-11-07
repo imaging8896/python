@@ -58,9 +58,11 @@ def refresh_token():
 
 def send_event(event):
     cmd = "su 0 .{0} {1}".format(BIN_PHONE_PATH, event)
-    out, _ = adb.exec_shell(cmd)
-    if out:
-        raise Exception(out)
+    for i in range(1, 5):  # retry 5 times
+        out, _ = adb.exec_shell(cmd)
+        if not out:
+            return
+    raise Exception(out)
 
 
 def cleanup():
@@ -81,9 +83,3 @@ def make_clean():
     makeUtils.make(THIS_DIR, "clean")
     if fileExists(BIN_LOCAL_PATH):
         raise Exception("Fail to make clean")
-
-
-if __name__ == '__main__':
-    setup()
-    refresh_token()
-    cleanup()

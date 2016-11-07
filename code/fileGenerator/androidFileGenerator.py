@@ -28,6 +28,9 @@ RANDOM_FILE_NAME = "random"
 RANDOM_FILE_PHONE = "/data/random"
 RANDOM_FILE = pathJoin(THIS_DIR, "random")
 
+SIZE_1M = 1024 * 1024
+SIZE_1G = SIZE_1M * 1024
+
 
 def setup():
     logger.info("setup")
@@ -85,19 +88,17 @@ def files_gen(num, size, path):
 
 
 def gen_large_file(file_path, size, in_stream="/dev/zero"):
-    size_1m = 1048576
-    count = size / size_1m + 1
+    count = size / SIZE_1M + 1
     return android_fileUtils.dd_bs_1m(file_path, count, in_stream)
 
 
 def gen_small_file(file_path, size, in_stream="/dev/zero"):
-    size_1g = 1073741824
-    assert size < size_1g, "Size too large, use gen_large_file instead."
+    assert size < SIZE_1G, "Size too large, use gen_large_file instead."
     return android_fileUtils.dd_one_count(file_path, size)
 
 
 def gen_1m_align_files(number, size, path, in_stream="/dev/zero"):
-    count = size / size_1m  # 1M align
+    count = size / SIZE_1M  # 1M align
     for i in range(1, number + 1):
         file_name = str(i) + ".file"
         file_path = os.path.join(path, file_name)
@@ -106,12 +107,11 @@ def gen_1m_align_files(number, size, path, in_stream="/dev/zero"):
 
 def modify_files_1m_data(begin, end, path):
     # modify 1M
-    size_1m = 1024 * 1024
     for i in range(begin, end + 1):
         file_name = str(i) + ".file"
         file_path = os.path.join(path, file_name)
         android_fileUtils.dd_one_count(
-            file_path, size_1m, "/dev/urandom", "conv=notrun")
+            file_path, SIZE_1M, "/dev/urandom", "conv=notrun")
 
 
 def fill_2M(path, total_size):

@@ -47,6 +47,10 @@ class AndroidFileUtils(object):
         cmd = "'echo \"{0}\" >> {1}'".format(content, path)
         return self.cmd_wrapper.exec_cmd(cmd)
 
+    def empty_file(self, file):
+        cmd = "'echo -n > {}'".format(file)
+        return self.cmd_wrapper.exec_cmd(cmd)
+
     def read(self, path):
         cmd = "'cat {0}'".format(path)
         return self.cmd_wrapper.exec_cmd(cmd)

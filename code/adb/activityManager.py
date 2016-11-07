@@ -48,8 +48,8 @@ class InstrumentBuilder(object):
     def add_scope_package(self, package):
         self.cmd += " -e package " + package
 
-    def add_scope_class(self, package, clazz):
-        self.cmd += " -e class {0}.{1}".format(package, clazz)
+    def add_scope_class(self, classes):
+        self.cmd += " -e class {}".format(classes)
 
-    def add_scope_method(self, package, clazz, method):
-        self.cmd += " -e class {0}.{1}#{2}".format(package, clazz, method)
+    def add_scope_method(self, methods):
+        self.cmd += " -e class {}".format(methods)

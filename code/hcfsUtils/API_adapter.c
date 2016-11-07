@@ -13,6 +13,9 @@
 #define RELOAD 4
 #define SETSYNCPOINT 5
 #define SETNOTIFY 6
+#define CLEARSYNCPOINT 7
+#define GETCONFIG 8
+#define SETCONFIG 9
 
 int32_t main(int32_t argc, char **argv)
 {
@@ -27,6 +30,10 @@ int32_t main(int32_t argc, char **argv)
   void (*HCFS_reload_config) (char **json_res);
   void (*HCFS_set_sync_point) (char **json_res);
   void (*HCFS_set_notify_server) (char **json_res, char *path);
+  void (*HCFS_clear_sync_point) (char **json_res);
+  void (*HCFS_get_config) (char **json_res, char *key);
+  void (*HCFS_set_config) (char **json_res, char *key, char *value);
+
 
   if (argc < 1) {
     fprintf(stderr, "Invalid number of arguments: %s\n", *argv);
@@ -46,6 +53,12 @@ int32_t main(int32_t argc, char **argv)
     code = SETSYNCPOINT;
   else if (strcasecmp(argv[1], "setnotify") == 0)
     code = SETNOTIFY;
+  else if (strcasecmp(argv[1], "clearsync") == 0)
+    code = CLEARSYNCPOINT;
+  else if (strcasecmp(argv[1], "getconfig") == 0)
+    code = GETCONFIG;
+  else if (strcasecmp(argv[1], "setconfig") == 0)
+    code = SETCONFIG;
   else {
     printf("{'result':-1, 'msg':'Invalid arguments'}");
     exit(1);
@@ -66,6 +79,9 @@ int32_t main(int32_t argc, char **argv)
   HCFS_reload_config = dlsym(lib_handle, "HCFS_reload_config");
   HCFS_set_sync_point = dlsym(lib_handle, "HCFS_set_sync_point");
   HCFS_set_notify_server = dlsym(lib_handle, "HCFS_set_notify_server");
+  HCFS_clear_sync_point = dlsym(lib_handle, "HCFS_clear_sync_point");
+  HCFS_get_config = dlsym(lib_handle, "HCFS_get_config");
+  HCFS_set_config = dlsym(lib_handle, "HCFS_set_config");
 
   /* check that no error occured */
   error_msg = dlerror();
@@ -87,6 +103,12 @@ int32_t main(int32_t argc, char **argv)
     (*HCFS_set_sync_point)(&json_res);
   else if(code == SETNOTIFY)
     (*HCFS_set_notify_server)(&json_res, argv[2]);
+  else if(code == CLEARSYNCPOINT)
+    (*HCFS_clear_sync_point)(&json_res);
+  else if(code == GETCONFIG)
+    (*HCFS_get_config)(&json_res, argv[2]);
+  else if(code == SETCONFIG)
+    (*HCFS_set_config)(&json_res, argv[2], argv[3]);
   fprintf(stdout, "%s", json_res);
   error_msg = dlerror();
   if (error_msg)

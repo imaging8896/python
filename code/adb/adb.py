@@ -1,20 +1,23 @@
 import subprocess
 from subprocess import Popen, PIPE
 import os
+from os.path import abspath
+from os.path import dirname
+from os.path import basename
+from os.path import exists as dirExists
+from os.path import join as pathJoin
 import time
 from datetime import datetime
-import shutil
 
 
 class ADB(object):
 
     def __init__(self, serial_num):
         self.serial_num = serial_num
-        THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-        report_dir = os.path.join(THIS_DIR, "report")
-        if not os.path.exists(report_dir):
-            os.makedirs(report_dir)
-        self.log_file = os.path.join(report_dir, "ADB")
+        self.report_dir = pathJoin(abspath(dirname(__file__)), "adb_log")
+        if not dirExists(self.report_dir):
+            os.makedirs(self.report_dir)
+        self.log_file = pathJoin(self.report_dir, "ADB")
         self.check_availability()
 
     def is_available(self):
@@ -69,7 +72,7 @@ class ADB(object):
     def pull_as_root(self, src, dest):
         self.exec_shell(
             "su 0 cp {0} /storage/emulated/0/Download/".format(src))
-        name = os.path.basename(src)
+        name = basename(src)
         out, err = self.pull("/storage/emulated/0/Download/" + name, dest)
         self.exec_shell("rm -f /storage/emulated/0/Download/{0}".format(name))
         return out, err
@@ -79,7 +82,7 @@ class ADB(object):
 
     def push_as_root(self, src, dest):
         self.push(src, "/data/local/tmp")
-        name = os.path.basename(src)
+        name = basename(src)
         return self.exec_shell("su 0 mv /data/local/tmp/{0} {1}".format(name, dest))
 
     def install(self, apk):
@@ -101,7 +104,7 @@ class ADB(object):
         return self.exec_adb("logcat -c")
 
     def reboot(self, timeout=240):
-        self.exec_shell("svc power reboot")
+        self.exec_shell("su 0 svc power reboot")
         time.sleep(20)
         if not self.is_available_and_sys_ready_until(timeout):
             raise Exception("Timeout when wait device bootup")
@@ -111,12 +114,13 @@ class ADB(object):
         Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
     def enable_wifi(self):
-        return self.exec_shell("svc wifi enable")
+        return self.exec_shell("su 0 svc wifi enable")
 
     def disable_wifi(self):
-        return self.exec_shell("svc wifi disable")
+        return self.exec_shell("su 0 svc wifi disable")
 
     def grant_permission(self, pkg, permission):
+        # no su 0, this make 'root' grant permission to app not 'shell'
         return self.exec_shell("pm grant {0} {1}".format(pkg, permission))
 
     def exec_shell(self, cmd, shutup=True, not_log=False):
@@ -139,8 +143,3 @@ class ADB(object):
 
     def __get_cmd_prefix(self):
         return "adb {0}".format("-s " + self.serial_num if self.serial_num else "-d")
-
-    def clear_log(self):
-        report_dir = os.path.dirname(self.log_file)
-        if os.path.exists(report_dir):
-            shutil.rmtree(report_dir)

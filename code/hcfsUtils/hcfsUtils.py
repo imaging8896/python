@@ -3,11 +3,10 @@ from os.path import isfile as fileExists
 from os.path import join as pathJoin
 from os.path import dirname
 from os.path import abspath
-import subprocess
-from subprocess import Popen, PIPE
 import json
 
 import makeUtils
+import timeout
 import config
 from ..adb.factory import *
 from ..dockerBuildUtils import dockerBuildUtils
@@ -69,6 +68,19 @@ def exec_api(opt):
 
 
 def get_stat():
+    """
+    >>> stat = get_stat()
+    >>> "result" in stat
+    True
+    >>> "code" in stat
+    True
+    >>> "data" in stat
+    True
+    >>> stat["result"]
+    True
+    >>> stat["code"]
+    0
+    """
     return exec_api("stat")
 
 
@@ -129,6 +141,47 @@ def set_notify_server(address):
     return exec_api("setnotify " + address)
 
 
+def clear_sync_point():
+    return exec_api("clearsync")
+
+
+def get_config(key):
+    """
+    >>> stat = get_config("current_backend")
+    >>> "result" in stat and "code" in stat and "data" in stat
+    True
+    >>> stat["result"] and stat["code"] == 0
+    True
+    >>> stat["data"]["current_backend"] in ["swifttoken", "swift", "none", "s3"]
+    True
+    >>> stat = get_config("swift_account")
+    >>> stat = get_config("swift_user")
+    >>> stat = get_config("swift_pass")
+    >>> stat = get_config("swift_url")
+    >>> stat = get_config("swift_container")
+    >>> stat = get_config("swift_protocol")
+    """
+    return exec_api("getconfig " + key)
+
+
+def set_config(key, value):
+    """
+    >>> stat = set_config("current_backend", "swifttoken")
+    >>> "result" in stat and "code" in stat and "data" in stat
+    True
+    >>> stat["result"] and stat["code"] == 0
+    True
+    >>> stat = get_config("current_backend")
+    >>> "result" in stat and "code" in stat and "data" in stat
+    True
+    >>> stat["result"] and stat["code"] == 0
+    True
+    >>> stat["data"]["current_backend"] in ["swifttoken", "swift", "none", "s3"]
+    True
+    """
+    return exec_api("setconfig {0} {1}".format(key, value))
+
+
 def set_log_level(level=10):
     adb.exec_shell("su 0 HCFSvol changelog " + str(level))
 
@@ -143,6 +196,17 @@ def is_hcfs_ok():
 def check_if_hcfs_is_ok():
     if not is_hcfs_ok():
         raise Exception("Fail to call HCFS API code. HCFS is crash.")
+
+
+def wait_cloud_connected():
+    def check_cloud_conn():
+        while True:
+            if get_stat()["data"]["cloud_conn"]:
+                break
+
+    msg = "Timeout wile wait cloud connection"
+    wait_cloud_conn_ok = timeout(msg, second=60)(check_cloud_conn)
+    wait_cloud_conn_ok()
 
 
 def cleanup():
