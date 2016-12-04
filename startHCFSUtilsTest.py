@@ -16,4 +16,4 @@ if __name__ == '__main__':
     suite.addTests(doctest.DocTestSuite(hcfsUtils))
     unittest.TextTestRunner(verbosity=2).run(suite)
 
-    hcfsUtils.cleanup()
+    # hcfsUtils.cleanup()

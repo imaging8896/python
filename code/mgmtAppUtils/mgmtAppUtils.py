@@ -1,6 +1,6 @@
 import config
 import _socketToMgmtApp as socketMgmtApp
-from ..adb.factory import adb, am
+from ..adb import adb, am
 from .. import LogcatUtils
 from ..hcfsUtils import hcfsUtils
 

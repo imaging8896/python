@@ -1,10 +1,8 @@
-from adb import ADB
-
 
 class ActivityManager(object):
 
-    def __init__(self, serial_num):
-        self.adb = ADB(serial_num)
+    def __init__(self, adb):
+        self.adb = adb
 
     def start_activity(self, pkg, activity):
         return self.adb.exec_shell("am start {0}/.{1}".format(pkg, activity))
@@ -16,7 +14,7 @@ class ActivityManager(object):
         if not callable(getattr(instrument_builder, "get_cmd", None)):
             raise Exception("instrument_builder's 'get_cmd' is not callable")
         cmd = instrument_builder.get_cmd()
-        return self.adb.exec_shell(cmd, shutup=False)
+        return self.adb.exec_shell(cmd, silent=False)
 
 
 class InstrumentBuilder(object):

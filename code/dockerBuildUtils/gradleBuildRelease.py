@@ -4,7 +4,7 @@ from os.path import join as pathJoin
 import sys
 from shutil import move, rmtree
 
-import gradleUtils
+from utilsLib import gradleUtils
 
 
 def get_sdk_path():

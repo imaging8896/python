@@ -6,23 +6,31 @@
 
 #define SO_PATH "libHCFS_api.so"
 
-#define STAT 0
-#define PIN 1
-#define STATUS 2
-#define UNPIN 3
-#define RELOAD 4
-#define SETSYNCPOINT 5
-#define SETNOTIFY 6
-#define CLEARSYNCPOINT 7
-#define GETCONFIG 8
-#define SETCONFIG 9
+void* get_lib() {
+  void* lib_handle = dlopen(SO_PATH, RTLD_NOW);
+  if (!lib_handle) {
+    fprintf(stderr, "Error during dlopen(): %s\n", dlerror());
+    exit(1);
+  }
+  return lib_handle;
+}
+
+void check_lib_err(char* msg) {
+  const char* error_msg = dlerror();
+  if (error_msg) {
+    fprintf(stderr, "Error %s - %s\n", msg, error_msg);
+    exit(1);
+  }
+}
 
 int32_t main(int32_t argc, char **argv)
 {
-  int32_t code;
   void* lib_handle;       /* handle of the opened library */
   char* json_res = NULL;
+
   /* first define a function pointer variable to hold the function's address */
+  void (*HCFS_dir_status) (char **json_res, char *pathname);
+  void (*HCFS_file_status) (char **json_res, char *pathname);
   void (*HCFS_stat) (char **json_res);
   void (*HCFS_pin_path) (char **json_res, char *pin_path, char pin_type);
   void (*HCFS_pin_status) (char **json_res, char *pathname);
@@ -34,44 +42,11 @@ int32_t main(int32_t argc, char **argv)
   void (*HCFS_get_config) (char **json_res, char *key);
   void (*HCFS_set_config) (char **json_res, char *key, char *value);
 
-
-  if (argc < 1) {
-    fprintf(stderr, "Invalid number of arguments: %s\n", *argv);
-    exit(1);
-  }
-  if (strcasecmp(argv[1], "stat") == 0)
-    code = STAT;
-  else if (strcasecmp(argv[1], "pin") == 0)
-    code = PIN;
-  else if (strcasecmp(argv[1], "status") == 0)
-    code = STATUS;
-  else if (strcasecmp(argv[1], "unpin") == 0)
-    code = UNPIN;
-  else if (strcasecmp(argv[1], "reload") == 0)
-    code = RELOAD;
-  else if (strcasecmp(argv[1], "setsync") == 0)
-    code = SETSYNCPOINT;
-  else if (strcasecmp(argv[1], "setnotify") == 0)
-    code = SETNOTIFY;
-  else if (strcasecmp(argv[1], "clearsync") == 0)
-    code = CLEARSYNCPOINT;
-  else if (strcasecmp(argv[1], "getconfig") == 0)
-    code = GETCONFIG;
-  else if (strcasecmp(argv[1], "setconfig") == 0)
-    code = SETCONFIG;
-  else {
-    printf("{'result':-1, 'msg':'Invalid arguments'}");
-    exit(1);
-  }
-  lib_handle = dlopen(SO_PATH, RTLD_NOW);
-  if (!lib_handle) {
-    fprintf(stderr, "Error during dlopen(): %s\n", dlerror());
-    exit(1);
-  }
+  lib_handle = get_lib();
   
-  /* then define a pointer to a possible error string */
-  const char* error_msg;
   /* now locate the function in the library */
+  HCFS_dir_status = dlsym(lib_handle, "HCFS_dir_status");
+  HCFS_file_status = dlsym(lib_handle, "HCFS_file_status");
   HCFS_stat = dlsym(lib_handle, "HCFS_stat");
   HCFS_pin_path = dlsym(lib_handle, "HCFS_pin_path");
   HCFS_pin_status = dlsym(lib_handle, "HCFS_pin_status");
@@ -83,37 +58,50 @@ int32_t main(int32_t argc, char **argv)
   HCFS_get_config = dlsym(lib_handle, "HCFS_get_config");
   HCFS_set_config = dlsym(lib_handle, "HCFS_set_config");
 
-  /* check that no error occured */
-  error_msg = dlerror();
-  if (error_msg) {
-    fprintf(stderr, "Error locating function - %s\n", error_msg);
-    exit(1);
-  }
-  if(code == STAT)
-    (*HCFS_stat)(&json_res);
-  else if(code == PIN)
-    (*HCFS_pin_path)(&json_res, argv[2], (char) 1);
-  else if(code == STATUS)
-    (*HCFS_pin_status)(&json_res, argv[2]);
-  else if(code == UNPIN)
-    (*HCFS_unpin_path)(&json_res, argv[2]);
-  else if(code == RELOAD)
-    (*HCFS_reload_config)(&json_res);
-  else if(code == SETSYNCPOINT)
-    (*HCFS_set_sync_point)(&json_res);
-  else if(code == SETNOTIFY)
-    (*HCFS_set_notify_server)(&json_res, argv[2]);
-  else if(code == CLEARSYNCPOINT)
-    (*HCFS_clear_sync_point)(&json_res);
-  else if(code == GETCONFIG)
-    (*HCFS_get_config)(&json_res, argv[2]);
-  else if(code == SETCONFIG)
-    (*HCFS_set_config)(&json_res, argv[2], argv[3]);
+  check_lib_err("locating function");
+
+  // argument passed to API
+  // API(NULL); -> Segmentation fault
+  // char* a = NULL;
+  // API(a); -> Segmentation fault
+  if(argc == 2) {
+    if (strcasecmp(argv[1], "stat") == 0)
+      (*HCFS_stat)(&json_res);
+    else if (strcasecmp(argv[1], "reload") == 0)
+      (*HCFS_reload_config)(&json_res);
+    else if (strcasecmp(argv[1], "setsync") == 0)
+      (*HCFS_set_sync_point)(&json_res);
+    else if (strcasecmp(argv[1], "clearsync") == 0)
+      (*HCFS_clear_sync_point)(&json_res);
+  } else if(argc == 3) {
+    if (strcasecmp(argv[1], "dirstatus") == 0)
+      (*HCFS_dir_status)(&json_res, argv[2]);
+    else if (strcasecmp(argv[1], "filestatus") == 0)
+      (*HCFS_file_status)(&json_res, argv[2]);
+    else if (strcasecmp(argv[1], "status") == 0)
+      (*HCFS_pin_status)(&json_res, argv[2]);
+    else if (strcasecmp(argv[1], "unpin") == 0)
+      (*HCFS_unpin_path)(&json_res, argv[2]);
+    else if (strcasecmp(argv[1], "setnotify") == 0)
+      (*HCFS_set_notify_server)(&json_res, argv[2]);
+    else if (strcasecmp(argv[1], "getconfig") == 0)
+      (*HCFS_get_config)(&json_res, argv[2]);
+  } else if(argc == 4) {
+    if (strcasecmp(argv[1], "pin") == 0)
+      (*HCFS_pin_path)(&json_res, argv[2], (char) 1);
+    else if (strcasecmp(argv[1], "setconfig") == 0)
+      (*HCFS_set_config)(&json_res, argv[2], argv[3]);
+  } else
+    goto err;
+
+  check_lib_err("after called function");
+
   fprintf(stdout, "%s", json_res);
-  error_msg = dlerror();
-  if (error_msg)
-    fprintf(stderr, "Error in calling function - %s\n", error_msg);
   dlclose(lib_handle);
+  return 0;
+
+err:
+  fprintf(stderr, "Invalid argument number\n");
   return 0;
 }
 

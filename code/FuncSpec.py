@@ -73,7 +73,7 @@ class FuncSpec(object):
             err.args += (inputs, outputs)
             return False, err.args
 
-    def gen_zero_instance_by_output_spec(self):
+    def gen_zero_obj_by_output_spec(self):
         return self.gen_by_spec(list, self.output_specs)
 
     def match_all(self, values, specs):

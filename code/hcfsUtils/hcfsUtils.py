@@ -8,7 +8,8 @@ import json
 import makeUtils
 import timeout
 import config
-from ..adb.factory import *
+from ..adb import adb
+from ..androidUtils import fileUtils
 from ..dockerBuildUtils import dockerBuildUtils
 
 logger = config.get_logger().getChild(__name__)
@@ -54,7 +55,7 @@ def build_hcfs_adapter():
 def install_hcfs_adapter_to_phone():
     logger.info("install_hcfs_adapter_to_phone")
     adb.push_as_root(ADAPTER_BIN_LOCAL, ADAPTER_BIN)
-    if not android_fileUtils.is_existed(ADAPTER_BIN):
+    if not fileUtils.is_existed(ADAPTER_BIN):
         raise Exception("Fail to adb push adapter bin.")
 
 
@@ -218,8 +219,8 @@ def cleanup():
 
 def uninstall_hcfs_adapter_from_phone():
     logger.info("uninstall_hcfs_adapter_from_phone")
-    android_fileUtils.rm(ADAPTER_BIN)
-    if android_fileUtils.is_existed(ADAPTER_BIN):
+    fileUtils.rm(ADAPTER_BIN)
+    if fileUtils.is_existed(ADAPTER_BIN):
         raise Exception("Fail to rm adapter bin in phone.")
 
 
@@ -234,22 +235,3 @@ def clean_env():
     logger.info("clean_env")
     if fileExists(HCFS_LIB):
         os.remove(HCFS_LIB)
-
-
-if __name__ == '__main__':
-    test_target_path = "/storage/emulated/0/DCIM/Camera"
-    setup()
-    # print set_sync_point()
-    # set_log_level(10)
-    # adb.get_logcat("tmp/logcat")
-    # adb.get_hcfs_log("tmp")
-    print repr(stat())
-    # print "cache " + repr(get_max_cache())
-    # print "max pin " + repr(get_max_pin())
-    # print "dirty " + repr(get_dirty())
-    # print repr(isPin(test_target_path))
-    # print repr(pin(test_target_path))
-    # print repr(isPin(test_target_path))
-    # print repr(unpin(test_target_path))
-    # print repr(isPin(test_target_path))
-    # cleanup()

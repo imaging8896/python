@@ -14,10 +14,8 @@ class ADB(object):
 
     def __init__(self, serial_num):
         self.serial_num = serial_num
-        self.report_dir = pathJoin(abspath(dirname(__file__)), "adb_log")
-        if not dirExists(self.report_dir):
-            os.makedirs(self.report_dir)
-        self.log_file = pathJoin(self.report_dir, "ADB")
+        self.logger = Logger()
+        self.report_dir = self.logger.report_dir
         self.check_availability()
 
     def is_available(self):
@@ -28,20 +26,24 @@ class ADB(object):
             return False
         return True
 
+    def get_state(self):
+        out, _ = self.exec_adb("get-state")
+        return out.strip()
+
     def check_availability(self):
         if not self.is_available():
             raise Exception("Adb device not found.")
 
-    def is_available_and_sys_ready_until(self, timeout):
+    def is_boot_completed(self):
+        out, _ = self.exec_shell("getprop sys.boot_completed")
+        return True if out.rstrip() == "1" else False
+
+    def wait_boot_completed_until(self, timeout):
         while not self.is_available() and timeout >= 0:
             time.sleep(10)
             timeout -= 10
-        out, _ = self.exec_shell(
-            "ls /sdcard/ | grep 'No such file or directory'")
-        while out and timeout >= 0:
+        while not self.is_boot_completed() and timeout >= 0:
             time.sleep(10)
-            out, _ = self.exec_shell(
-                "ls /sdcard/ | grep 'No such file or directory'")
             timeout -= 10
         return timeout >= 0
 
@@ -63,7 +65,7 @@ class ADB(object):
     def hard_reboot(self, timeout=240):
         self.exec_adb("reboot")
         time.sleep(20)
-        if not self.is_available_and_sys_ready_until(timeout):
+        if not self.wait_boot_completed_until(timeout):
             raise Exception("Timeout when wait device bootup")
 
     def pull(self, src, dest):
@@ -106,7 +108,7 @@ class ADB(object):
     def reboot(self, timeout=240):
         self.exec_shell("su 0 svc power reboot")
         time.sleep(20)
-        if not self.is_available_and_sys_ready_until(timeout):
+        if not self.wait_boot_completed_until(timeout):
             raise Exception("Timeout when wait device bootup")
 
     def reboot_async(self):
@@ -123,17 +125,17 @@ class ADB(object):
         # no su 0, this make 'root' grant permission to app not 'shell'
         return self.exec_shell("pm grant {0} {1}".format(pkg, permission))
 
-    def exec_shell(self, cmd, shutup=True, not_log=False):
-        return self.exec_adb("shell " + cmd, shutup)
+    def exec_shell(self, cmd, silent=True, not_log=False):
+        return self.exec_adb("shell " + cmd, silent)
 
-    def exec_adb(self, cmd, shutup=True, not_log=False):
-        with open(self.log_file, "a") as log_file:
+    def exec_adb(self, cmd, silent=True, not_log=False):
+        with open(self.logger.get_log_file(), "a") as log_file:
             cmd = self.__get_cmd_prefix() + " " + cmd
-            if shutup:
+            if silent:
                 process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
                 out, err = process.communicate()
             else:
-                subprocess.call(cmd, shell=True)
+                subprocess.check_output(cmd, shell=True)
                 out, err = "", ""
             if not not_log:
                 msg = "{0} : {1} : ({2},{3})\n".format(
@@ -141,5 +143,46 @@ class ADB(object):
                 log_file.write(msg)
         return out, err
 
+    def get_dmesg(self, path):
+        self.exec_shell("dmesg > " + path, not_log=True)
+
+    def get_version(self):
+        out, _ = self.exec_shell("getprop ro.build.version.incremental")
+        return int(out.rstrip())
+
+    def get_logs(self, logcat_tag=["HopeBay", "TeraService"]):
+        version = self.get_version()
+        logs_dir = pathJoin(self.report_dir, get_new_dirname(version))
+        if not dirExists(logs_dir):
+            os.makedirs(logs_dir)
+        self.get_hcfs_log(pathJoin(logs_dir, "hcfs_android_log"))
+        for tag in logcat_tag:
+            self.get_logcat(pathJoin(logs_dir, tag + "_logcat"), tag)
+        self.get_logcat(pathJoin(logs_dir, "logcat"))
+        self.get_dmesg(pathJoin(logs_dir, "dmesg"))
+        return logs_dir
+
+    def get_hcfs_log(self, path):
+        self.pull_as_root("/data/hcfs_android_log", path)
+
     def __get_cmd_prefix(self):
         return "adb {0}".format("-s " + self.serial_num if self.serial_num else "-d")
+
+
+class Logger(object):
+
+    def __init__(self):
+        self.report_dir = pathJoin(abspath(dirname(__file__)), "adb_log")
+        if not dirExists(self.report_dir):
+            os.makedirs(self.report_dir)
+
+    def get_log_file(self):
+        if not dirExists(self.report_dir):
+            os.makedirs(self.report_dir)
+        return pathJoin(self.report_dir, "ADB")
+
+
+def get_new_dirname(version):
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    return "{0}-{1}".format(str(version), timestamp)

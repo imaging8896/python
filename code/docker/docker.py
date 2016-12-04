@@ -18,6 +18,7 @@ class Docker(object):
         self.image = image
         self.shell_cmd = shell_cmd
         self.shell_args = shell_args
+        self.dockerfile_path = None
 
     def add_volume(self, host_vol, cont_vol, permission=""):
         self.logger.info("add_volume" + repr((host_vol, cont_vol, permission)))
@@ -28,6 +29,10 @@ class Docker(object):
     def set_privileged(self):
         self.logger.info("set_privileged")
         self.docker_cmd += " --privileged"
+
+    def set_dockerfile_path(self, path):
+        self.logger.info("set_dockerfile_path")
+        self.dockerfile_path = path
 
     # TODO default set, HOW to disable
     def set_tty(self):
@@ -44,17 +49,22 @@ class Docker(object):
 
     def run(self):
         try:
-            self.logger.info("Run docker " + self.name)
+            self.logger.info("Run docker " + self.image)
+            cmd = "docker build -t {0} {1}".format(
+                self.image, self.dockerfile_path)
+            subprocess.check_output(cmd, shell=True)
+
             cmd = "{0} --name={1} {2} {3} {4}".format(
                 self.docker_cmd, self.name, self.image, self.shell_cmd, self.shell_args)
             self.logger.info("run" + repr((cmd)))
-            subprocess.call(cmd, shell=True)
+            self.logger.info(subprocess.check_output(cmd, shell=True))
         except Exception as e:
             self.terminate()
             print e
 
     def terminate(self):
-        self.logger.info("Terminate docker " + self.name)
+        self.logger.info("Terminate docker " + self.image)
         cmd = "sudo docker rm -f " + self.name
+        # ignore any error. such as 'non-exists container'
         subprocess.call(cmd, shell=True)
         self.logger.debug("terminate" + repr((cmd)))

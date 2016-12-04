@@ -5,7 +5,8 @@ from os.path import abspath
 
 import makeUtils
 import config
-from ..adb.factory import *
+from ..adb import adb
+from ..androidUtils import fileUtils
 from ..dockerBuildUtils import dockerBuildUtils
 
 logger = config.get_logger().getChild(__name__)
@@ -20,14 +21,8 @@ UTILS = "/data/" + UTILS_NAME
 def setup():
     logger.info("setup")
     cleanup()
-    check_build_env()
     build_alias_utils()
     install_alias_utils()
-
-
-def check_build_env():
-    logger.info("check_build_env")
-    adb.check_availability()
 
 
 def build_alias_utils():
@@ -40,7 +35,7 @@ def build_alias_utils():
 def install_alias_utils():
     logger.info("install_alias_utils")
     adb.push_as_root(UTILS_LOCAL, UTILS)
-    if not android_fileUtils.is_existed(UTILS):
+    if not fileUtils.is_existed(UTILS):
         raise Exception("Fail to adb push alias utils binary.")
 
 
@@ -112,8 +107,8 @@ def gen_all_alias(file, max_alias=-1):
 def get_alias_inos(file, max_alias=-1):
     """
     >>> from code.adb.factory import *
-    >>> _,_ = android_fileUtils.touch("/storage/emulated/0/abc.file")
-    >>> get_alias_inos("/storage/emulated/0/abc.file")
+    >>> _,_ = fileUtils.touch("/storage/emulated/0/abc.file")
+    >>> len(get_alias_inos("/storage/emulated/0/abc.file"))
     128
     >>> len(get_alias_inos("/storage/emulated/0/Music"))
     32
@@ -137,7 +132,7 @@ def get_alias_inos(file, max_alias=-1):
     Traceback (most recent call last):
         ...
     ValueError: invalid literal for int() with base 10: '/storage/emulated/0/music1:No such file or directory'
-    >>> _,_ = android_fileUtils.rm("/storage/emulated/0/abc.file")
+    >>> _,_ = fileUtils.rm("/storage/emulated/0/abc.file")
     """
     if not file:
         raise ValueError("Empty path is not allowed.")
@@ -158,8 +153,8 @@ def cleanup():
 
 def uninstall_alias_utils():
     logger.info("uninstall_alias_utils")
-    android_fileUtils.rm(UTILS)
-    if android_fileUtils.is_existed(UTILS):
+    fileUtils.rm(UTILS)
+    if fileUtils.is_existed(UTILS):
         raise Exception("Fail to rm alias utils binary in phone.")
 
 

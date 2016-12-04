@@ -19,7 +19,11 @@ EXEC_GRADLE = "'python {0} {1} {2}'".format(
 THIS_DIR = abspath(dirname(__file__))
 
 # public NDK=bitriseio/android-ndk sdk=ksoichiro/android
-# internal NDK=docker:5000/wuxian.zhang/android-ndk-docker
+# internal NDK=
+# NDK:
+#   docker:5000/wuxian.zhang/android-ndk-docker (no python)
+#   docker:5000/jenkins-terafonn_build-slave
+#   ted/ubuntu-ndk-python:14.04-r13b-2.7 (dockerfile)
 
 
 class AndroidNDKDocker(docker.Docker):
@@ -27,8 +31,10 @@ class AndroidNDKDocker(docker.Docker):
     def __init__(self, name):
 
         super(AndroidNDKDocker, self).__init__(
-            name, "docker:5000/jenkins-terafonn_build-slave", "/bin/sh -c", EXEC_MAKE)
+            name, "ted/ubuntu-ndk-python:14.04-r13b-2.7", "/bin/sh -c", EXEC_MAKE)
         self.set_privileged()
+        self.set_dockerfile_path(THIS_DIR)
+
         self.add_volume(THIS_DIR, DOCKER_START_DIR, "rw")
         self.set_working_dir(DOCKER_START_DIR)
 

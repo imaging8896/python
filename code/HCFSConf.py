@@ -1,9 +1,8 @@
 import os
 import subprocess
 from subprocess import PIPE
-import tempfile
 
-import adb
+from adb import adb
 import config
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))

@@ -8,17 +8,22 @@ RELEASE_APK_RELATIVE = pathJoin(
 
 
 def clean(cwd):
-    _exec_cmd("./gradlew clean", cwd)
+    exec_task("clean", cwd)
 
 
 def build_release(cwd):
-    # _exec_cmd(
-    #     "echo y | android update sdk --all  --no-ui --filter extra-android-m2repository", cwd)
-    out, err = _exec_cmd("./gradlew assembleRelease", cwd)
+    # _exec_cmd(android update sdk --all  --no-ui --filter
+    # extra-android-m2repository", cwd)
+    out, err = exec_task("assembleRelease", cwd)
     release_apk = pathJoin(cwd, RELEASE_APK_RELATIVE)
     if not fileExists(release_apk):
         raise Exception("Fail to build apk:" + str((out, err)))
     return release_apk
+
+
+def exec_task(task, cwd, args=[]):
+    cmd = "./gradlew {0} {1}".format(task, " ".join(args))
+    return _exec_cmd(cmd, cwd)
 
 
 def _exec_cmd(cmd, cwd):

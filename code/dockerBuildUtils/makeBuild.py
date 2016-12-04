@@ -3,9 +3,8 @@ from os.path import exists as dirExists
 from os.path import isfile as fileExists
 from os.path import join as pathJoin
 import sys
-import subprocess
 
-import makeUtils
+from utilsLib import makeUtils
 
 MAKEFILE_NDK_ENV_VAR = "ANDROID_NDK"
 
@@ -38,6 +37,7 @@ def set_ndk_env_var():
     ndk = get_ndk_path()
     check_ndk_version(ndk)
     os.environ[MAKEFILE_NDK_ENV_VAR] = ndk
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

@@ -1,12 +1,10 @@
-import os
 from os.path import isfile as fileExists
 from os.path import dirname
 from os.path import abspath
-from subprocess import Popen, PIPE
 
 import config
 import makeUtils
-from ..adb.factory import *
+from ..adb import adb, android_fileUtils
 from ..dockerBuildUtils import dockerBuildUtils
 
 logger = config.get_logger().getChild(__name__)

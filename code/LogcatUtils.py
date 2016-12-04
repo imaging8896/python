@@ -1,8 +1,7 @@
 from datetime import datetime
-from subprocess import Popen, PIPE
 import time
 
-from adb.factory import *
+from adb import adb
 
 
 class Logcat(object):
@@ -73,7 +72,7 @@ class Logcat(object):
         try:
             datetime.strptime(date_text, self.TIME_FMT)
             return True
-        except ValueError as a:
+        except ValueError:
             return False
 
 
@@ -84,6 +83,7 @@ def clear_logcat():
 def create_logcat_obj(tag):
     # Initial Logs object from this method
     return Logcat(tag)
+
 
 if __name__ == '__main__':
     import time

@@ -1,9 +1,7 @@
 from datetime import datetime
-import subprocess
-from subprocess import Popen, PIPE
 import time
 
-import adb
+from adb import adb
 
 
 class HCFSLog(object):
@@ -86,6 +84,7 @@ class HCFSLog(object):
 def create_HCFS_log_obj():
     # Initial Logs object from this method
     return HCFSLog()
+
 
 if __name__ == '__main__':
     import time

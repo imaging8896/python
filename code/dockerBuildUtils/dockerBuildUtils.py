@@ -2,9 +2,7 @@ from os.path import isfile as fileExists
 from os.path import join as pathJoin
 from os import remove
 
-from docker import *
-
-# TODO update sdk
+from docker import AndroidNDKDocker, AndroidSDKDocker
 
 
 def make_ndk_build(build_dir):

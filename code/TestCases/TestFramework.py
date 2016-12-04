@@ -16,9 +16,9 @@ class Case(object):
             self.setUp()
             self.test()
         except TestAssertionError as tae:
-            return False, tae.msg + ", stack trace : " + traceback.format_exc()
+            return False, "In case ({0})\n msg={1}\n stack trace:{2}\n".format(str(self), tae.msg, traceback.format_exc())
         except Exception as e:
-            return False, "In class({0}) : {1}, stack trace : {2}".format(str(self), e.args, traceback.format_exc())
+            return False, "In class({0}) : {1}\n stack trace : {2}".format(type(self).__name__, e.args, traceback.format_exc())
         finally:
             self.tearDown()
         return True, ""
@@ -34,6 +34,7 @@ class TestSuite(object):
 
     def __init__(self):
         self.cases = []
+        self.results = []
 
     def test(self):
         raise Exception("Override this method to implement the test.")
@@ -51,8 +52,10 @@ class TestSuite(object):
         for case in self.cases:
             is_pass, msg = case.run()
             if not is_pass:
-                return False, msg + " in case : " + str(case)
+                self.results += [msg]
         # self.tearDown() # Currently not need
+        if self.results:
+            return False, "Failed cases number ={0}\n {1}".format(len(self.results), "\n".join(self.results))
         return True, ""
 
 

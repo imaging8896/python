@@ -1,72 +1,70 @@
-import os
-
-from wrapper import ADBCmdWrapper
+from os.path import dirname
 
 
 class AndroidFileUtils(object):
 
-    def __init__(self, serial_num):
-        self.cmd_wrapper = ADBCmdWrapper(serial_num)
+    def __init__(self, adb):
+        self.adb = adb
 
     def touch(self, path):
-        cmd = "touch {0}".format(path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "su 0 touch {0}".format(path)
+        return self.adb.exec_shell(cmd)
 
     def dd_bs_1m(self, path, count, in_stream, opt=""):
-        cmd = "dd if={0} of={1} bs=1048576 count={2} {3}".format(
+        cmd = "su 0 dd if={0} of={1} bs=1048576 count={2} {3}".format(
             in_stream, path, str(count), opt)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        return self.adb.exec_shell(cmd)
 
     def dd_one_count(self, path, size, in_stream, opt=""):
-        cmd = "dd if={0} of={1} bs={2} count=1 {3}".format(
+        cmd = "su 0 dd if={0} of={1} bs={2} count=1 {3}".format(
             in_stream, path, str(size), opt)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        return self.adb.exec_shell(cmd)
 
     def dd(self, path, bs, count, in_stream, opt=""):
-        cmd = "dd if={0} of={1} bs={2} count={3} {4}".format(
+        cmd = "su 0 dd if={0} of={1} bs={2} count={3} {4}".format(
             in_stream, path, str(bs), str(count), opt)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        return self.adb.exec_shell(cmd)
 
     def rm(self, path):
-        cmd = "rm -f {0}".format(path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "su 0 rm -f {0}".format(path)
+        return self.adb.exec_shell(cmd)
 
     def rm_r(self, path):
-        cmd = "rm -rf {0}".format(path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "su 0 rm -rf {0}".format(path)
+        return self.adb.exec_shell(cmd)
 
     def rmdir(self, path):
-        cmd = "rmdir {0}".format(path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "su 0 rmdir {0}".format(path)
+        return self.adb.exec_shell(cmd)
 
     def mv(self, src_path, dest_path):
-        cmd = "mv {0} {1}".format(src_path, dest_path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "su 0 mv {0} {1}".format(src_path, dest_path)
+        return self.adb.exec_shell(cmd)
 
     def append(self, content, path):
-        cmd = "'echo \"{0}\" >> {1}'".format(content, path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "'su 0 echo \"{0}\" >> {1}'".format(content, path)
+        return self.adb.exec_shell(cmd)
 
     def empty_file(self, file):
-        cmd = "'echo -n > {}'".format(file)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "'su 0 echo -n > {}'".format(file)
+        return self.adb.exec_shell(cmd)
 
     def read(self, path):
-        cmd = "'cat {0}'".format(path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "'su 0 cat {0}'".format(path)
+        return self.adb.exec_shell(cmd)
 
     def mkdir(self, path):
-        cmd = "'mkdir {0}'".format(path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "'su 0 mkdir {0}'".format(path)
+        return self.adb.exec_shell(cmd)
 
     def makedirs(self, path):
         if not self.is_existed(path):
-            self.makedirs(os.path.dirname(path))
+            self.makedirs(dirname(path))
             self.mkdir(path)
 
     def ls(self, path, opt=""):
-        cmd = "'ls {0} {1}'".format(opt, path)
-        return self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "'su 0 ls {0} {1}'".format(opt, path)
+        return self.adb.exec_shell(cmd)
 
     def is_existed(self, path):
         ls_result, err = self.ls(path)
@@ -129,8 +127,8 @@ class AndroidFileUtils(object):
         if remove_opts:
             for remove_opt in remove_opts:
                 opt.remove(remove_opt)
-        cmd = "stat -c%{0} {1}".format(",%".join(opt), path)
-        out, err = self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "su 0 stat -c%{0} {1}".format(",%".join(opt), path)
+        out, err = self.adb.exec_shell(cmd)
         if err:
             raise Exception("Stat <" + path + "> error:" + err)
         stat = out.rstrip().split(",")
@@ -140,18 +138,20 @@ class AndroidFileUtils(object):
         return stat
 
     def stat(self, opt, path):
-        cmd = "stat -c%{0} {1}".format(opt, path)
-        out, err = self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "su 0 stat -c%{0} {1}".format(opt, path)
+        out, err = self.adb.exec_shell(cmd)
         if err:
             raise Exception("Stat <" + path + "> error:" + err)
         if not out:
             raise Exception("Stat <" + path + "> result is empty")
         return out.rstrip()
 
+
 if __name__ == '__main__':
+    from __init__ import adb
     # file_utils = FileUtils()
     # print file_utils.get_file_stat("/home/test")
-    file_utils = FileUtils(wrapper.ADBCmdWrapper("Ted"))
+    file_utils = AndroidFileUtils(adb)
     print file_utils.get_file_stat("/storage/emulated/0/1.f")
     file_utils.makedirs("/storage/emulated/0/a/b/c/d")
     print file_utils.is_existed("/storage/emulated/0/a/b/c/d")

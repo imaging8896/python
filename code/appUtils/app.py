@@ -6,7 +6,7 @@ from os.path import dirname
 from os import makedirs
 from os import remove
 
-from ..adb.factory import *
+from ..adb import adb, android_fileUtils
 from ..dockerBuildUtils import dockerBuildUtils
 
 TEST_RUNNER = "com.zutubi.android.junitreport.JUnitReportTestRunner"

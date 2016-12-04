@@ -1,15 +1,11 @@
-import os
-
-from wrapper import ADBCmdWrapper
-
 MEM_TOTAL = "MemTotal"
 MEM_FREE = "MemFree"
 
 
 class AndroidSystemUtils(object):
 
-    def __init__(self, serial_num):
-        self.cmd_wrapper = ADBCmdWrapper(serial_num)
+    def __init__(self, adb):
+        self.adb = adb
 
 # MemTotal:        1857352 kB
 # MemFree:           88700 kB
@@ -52,20 +48,11 @@ class AndroidSystemUtils(object):
         return self.get_memory(MEM_FREE)
 
     def get_memory(self, key):
-        cmd = "cat /proc/meminfo | grep " + key
-        out, err = self.cmd_wrapper.exec_cmd(cmd)
+        cmd = "su 0 cat /proc/meminfo | grep " + key
+        out, err = self.adb.exec_shell(cmd)
         if err:
             raise Exception("Fail to get memory information.")
         find_key, value = out.split(":")
         if find_key != key:
             raise ValueError("Can't find by key " + key)
         return value.strip()
-
-
-if __name__ == '__main__':
-    # file_utils = FileUtils()
-    # print file_utils.get_file_stat("/home/test")
-    import wrapper
-    sys_utils = SystemUtils(wrapper.ADBCmdWrapper("Ted"))
-    print sys_utils.get_memory(MEM_TOTAL)
-    print sys_utils.get_memory(MEM_FREE)

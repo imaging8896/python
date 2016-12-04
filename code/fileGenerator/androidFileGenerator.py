@@ -3,12 +3,10 @@ from os.path import isfile as fileExists
 from os.path import join as pathJoin
 from os.path import dirname
 from os.path import abspath
-import subprocess
-from subprocess import Popen, PIPE
 
 import makeUtils
 import config
-from ..adb.factory import *
+from ..adb import adb, android_fileUtils
 from ..dockerBuildUtils import dockerBuildUtils
 
 # use /dev/zero is much faster than /dev/urandom
@@ -162,6 +160,7 @@ def make_clean():
         raise Exception("Fail to make clean FileGen")
     if fileExists(SINGLE_FG_BIN):
         raise Exception("Fail to make clean SingleFileGen")
+
 
 if __name__ == '__main__':
     import datetime
