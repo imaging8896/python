@@ -73,10 +73,11 @@ class ADB(object):
 
     def pull_as_root(self, src, dest):
         self.exec_shell(
-            "su 0 cp {0} /storage/emulated/0/Download/".format(src))
-        name = basename(src)
-        out, err = self.pull("/storage/emulated/0/Download/" + name, dest)
-        self.exec_shell("rm -f /storage/emulated/0/Download/{0}".format(name))
+            "su 0 cp {0} /data/local/tmp".format(src))
+        pull_src = "/data/local/tmp/" + basename(src)
+        self.exec_shell("su 0 chmod 777 " + pull_src)
+        out, err = self.pull(pull_src, dest)
+        self.exec_shell("rm -f /data/local/tmp/{0}".format(basename(src)))
         return out, err
 
     def push(self, src, dest):
@@ -121,6 +122,12 @@ class ADB(object):
     def disable_wifi(self):
         return self.exec_shell("su 0 svc wifi disable")
 
+    def enable_4g(self):
+        return self.exec_shell("su 0 svc data enable")
+
+    def disable_4g(self):
+        return self.exec_shell("su 0 svc data disable")
+
     def grant_permission(self, pkg, permission):
         # no su 0, this make 'root' grant permission to app not 'shell'
         return self.exec_shell("pm grant {0} {1}".format(pkg, permission))
@@ -155,7 +162,9 @@ class ADB(object):
         logs_dir = pathJoin(self.report_dir, get_new_dirname(version))
         if not dirExists(logs_dir):
             os.makedirs(logs_dir)
-        self.get_hcfs_log(pathJoin(logs_dir, "hcfs_android_log"))
+        self.get_tombstones(logs_dir)
+        self.get_hcfs_bin(logs_dir)
+        self.get_hcfs_log(logs_dir)
         for tag in logcat_tag:
             self.get_logcat(pathJoin(logs_dir, tag + "_logcat"), tag)
         self.get_logcat(pathJoin(logs_dir, "logcat"))
@@ -163,7 +172,23 @@ class ADB(object):
         return logs_dir
 
     def get_hcfs_log(self, path):
-        self.pull_as_root("/data/hcfs_android_log", path)
+        self.pull("/data/hcfs_android_log", path)
+        # self.pull("/data/hcfs_android_log.1", path)
+        # self.pull("/data/hcfs_android_log.2", path)
+        # self.pull("/data/hcfs_android_log.3", path)
+        # self.pull("/data/hcfs_android_log.4", path)
+        # self.pull("/data/hcfs_android_log.5", path)
+
+    def get_hcfs_bin(self, path):
+        self.pull_as_root("/system/bin/hcfs", path)
+
+    def get_tombstones(self, path):
+        out, _ = self.exec_shell("su 0 ls -l /data/tombstones/")
+        # -rw------- system   system     491314 2016-12-09 09:56 tombstone_09
+        for line in out.rstrip().split("\r\n"):
+            _, _, _, _, day, time, tombstone = filter(None, line.split(" "))
+            dest = pathJoin(path, day + "-" + time + "-" + tombstone)
+            self.pull_as_root("/data/tombstones/" + tombstone, dest)
 
     def __get_cmd_prefix(self):
         return "adb {0}".format("-s " + self.serial_num if self.serial_num else "-d")

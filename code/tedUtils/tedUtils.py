@@ -130,3 +130,8 @@ def get_all_casings_file(file):
         raise ValueError("Argument should have value.")
     for case in all_casings(basename(file)):
         yield pathJoin(dirname(file), case)
+
+
+def get_cur_timestamp():
+    from datetime import datetime
+    return datetime.now().strftime("%Y-%m-%d-%H:%M:%S")

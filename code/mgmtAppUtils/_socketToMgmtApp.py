@@ -4,7 +4,8 @@ from os.path import abspath
 
 import config
 import makeUtils
-from ..adb import adb, android_fileUtils
+from ..adb import adb
+from ..androidUtils import fileUtils
 from ..dockerBuildUtils import dockerBuildUtils
 
 logger = config.get_logger().getChild(__name__)
@@ -42,7 +43,7 @@ def build_socket_utils():
 def install_socket_utils_to_phone():
     logger.info("install_socket_utils_to_phone")
     adb.push_as_root(BIN_LOCAL_PATH, BIN_PHONE_PATH)
-    if not android_fileUtils.is_existed(BIN_PHONE_PATH):
+    if not fileUtils.is_existed(BIN_PHONE_PATH):
         raise Exception("Fail to adb push bin file.")
 
 
@@ -71,8 +72,8 @@ def cleanup():
 
 def uninstall_socket_utils_from_phone():
     logger.info("uninstall_socket_utils_from_phone")
-    android_fileUtils.rm(BIN_PHONE_PATH)
-    if android_fileUtils.is_existed(BIN_PHONE_PATH):
+    fileUtils.rm(BIN_PHONE_PATH)
+    if fileUtils.is_existed(BIN_PHONE_PATH):
         raise Exception("Fail to rm socket utils bin in phone.")
 
 

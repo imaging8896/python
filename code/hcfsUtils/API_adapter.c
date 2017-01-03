@@ -31,6 +31,7 @@ int32_t main(int32_t argc, char **argv)
   /* first define a function pointer variable to hold the function's address */
   void (*HCFS_dir_status) (char **json_res, char *pathname);
   void (*HCFS_file_status) (char **json_res, char *pathname);
+  void (*HCFS_get_occupied_size) (char **json_res);
   void (*HCFS_stat) (char **json_res);
   void (*HCFS_pin_path) (char **json_res, char *pin_path, char pin_type);
   void (*HCFS_pin_status) (char **json_res, char *pathname);
@@ -46,6 +47,7 @@ int32_t main(int32_t argc, char **argv)
   
   /* now locate the function in the library */
   HCFS_dir_status = dlsym(lib_handle, "HCFS_dir_status");
+  HCFS_get_occupied_size = dlsym(lib_handle, "HCFS_get_occupied_size");
   HCFS_file_status = dlsym(lib_handle, "HCFS_file_status");
   HCFS_stat = dlsym(lib_handle, "HCFS_stat");
   HCFS_pin_path = dlsym(lib_handle, "HCFS_pin_path");
@@ -65,7 +67,9 @@ int32_t main(int32_t argc, char **argv)
   // char* a = NULL;
   // API(a); -> Segmentation fault
   if(argc == 2) {
-    if (strcasecmp(argv[1], "stat") == 0)
+	if (strcasecmp(argv[1], "occupiedsize") == 0)
+      (*HCFS_get_occupied_size)(&json_res);
+    else if (strcasecmp(argv[1], "stat") == 0)
       (*HCFS_stat)(&json_res);
     else if (strcasecmp(argv[1], "reload") == 0)
       (*HCFS_reload_config)(&json_res);

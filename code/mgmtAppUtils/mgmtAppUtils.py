@@ -1,6 +1,7 @@
 import config
 import _socketToMgmtApp as socketMgmtApp
-from ..adb import adb, am
+from ..adb import adb
+from ..androidUtils import am
 from .. import LogcatUtils
 from ..hcfsUtils import hcfsUtils
 

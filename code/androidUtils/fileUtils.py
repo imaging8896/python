@@ -1,4 +1,5 @@
 from os.path import dirname
+from os.path import basename
 
 
 class AndroidFileUtils(object):
@@ -8,6 +9,10 @@ class AndroidFileUtils(object):
 
     def touch(self, path):
         cmd = "su 0 touch {0}".format(path)
+        return self.adb.exec_shell(cmd)
+
+    def cp(self, src, dest):
+        cmd = "su 0 cp {0} {1}".format(src, dest)
         return self.adb.exec_shell(cmd)
 
     def dd_bs_1m(self, path, count, in_stream, opt=""):
@@ -71,6 +76,13 @@ class AndroidFileUtils(object):
         if err:
             raise Exception("Error while 'ls' {0}".format(path))
         return ("No such file" not in ls_result)
+
+    def get_all_files(self, path):
+        cmd = "'su 0 find {} -type f'".format(path)
+        return self.adb.exec_shell(cmd)[0].split("\r\n")
+
+    def get_all_file_names(self, path):
+        return map(basename, self.get_all_files(path))
 
     def get_ino(self, path):
         out = self.stat("i", path)

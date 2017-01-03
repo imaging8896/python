@@ -113,6 +113,10 @@ def get_total_pin():
     return long(get_stat()["data"]["pin_total"])
 
 
+def get_occupied_size():
+    return long(exec_api("occupiedsize")["data"]["occupied"])
+
+
 def get_pin_free_space():
     return get_max_pin() - get_total_pin()
 
