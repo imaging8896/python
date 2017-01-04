@@ -12,3 +12,7 @@
 * code/tedUtils : coding helper function for python 
 * code/LogcatUtils.py : logcat parser. Instrument logcat utils
 * code/FuncSpec.py : verify function input/ouput by function signature
+
+## unit test
+* use doc test
+* unit test python files are any file name with 'startXXXTest.py' in the root directory
