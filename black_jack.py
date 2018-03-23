@@ -39,6 +39,7 @@ class Player(object):
             # 你只需改變數量，呼叫 points 時會去計算現在的分數，遞迴直到 分數低於 21 或是 全部的 Ａ 都換成 1
             self.a_11 -= 1
             self.a_1 += 1
+            # 遞迴
             self._balance()
 
 
@@ -76,7 +77,7 @@ def play(players, card_generator):
             for player in players:
                 if player.min_points <= 17:
                     player.add_card(card_generator.get_card())
-    # 繼續下一輪
+    # 繼續下一輪 遞迴
     return play(players, card_generator)
 
 
