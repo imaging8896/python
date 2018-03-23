@@ -48,7 +48,6 @@ class CardGenerator(object):
 
     def __init__(self, my_card_list):
         self.cards = my_card_list
-        self.card_count = 52
 
     def get_card(self):
         return self.cards.pop(0)
@@ -59,7 +58,6 @@ class RandomCardGenerator(object):
 
     def __init__(self):
         self.cards = list("A23456789JQK" * 4) + ["10", "10", "10", "10"]  # '10' 有兩個字元不能用前面方法轉陣列
-        self.card_count = 52
 
     def get_card(self):
         random_index = random.randint(1, len(self.cards))
