@@ -43,6 +43,7 @@ class Player(object):
             self._balance()
 
 
+# 可以手動設定發牌內容的發牌機
 class CardGenerator(object):
 
     def __init__(self, my_card_list):
@@ -53,6 +54,7 @@ class CardGenerator(object):
         return self.cards.pop(0)
 
 
+# 隨機發牌機
 class RandomCardGenerator(object):
 
     def __init__(self):
