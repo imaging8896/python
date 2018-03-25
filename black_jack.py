@@ -25,11 +25,7 @@ class Player(object):
         if card == "A":
             self.a_11 += 1
         elif card in ["J", "Q", "K"]:
-            self.other += {
-                "J": 11,
-                "Q": 12,
-                "K": 13
-            }[card]
+            self.other += 10
         else:
             self.other += int(card)
         self._balance()
@@ -43,7 +39,7 @@ class Player(object):
             self._balance()
 
 
-# 可以手動設定發牌內容的發牌機
+# 自己設定發牌順序的發牌機
 class CardGenerator(object):
 
     def __init__(self, my_card_list):
@@ -70,12 +66,12 @@ def play(players, card_generator):
         for player in players:
             player.add_card(card_generator.get_card())
     else:
-        if all([player.min_points > 17 for player in players]):
+        if all([player.min_points >= 17 for player in players]):
             # 遊戲結束條件，所有玩家都大於 17 不用再發牌，也可以設計成某一位穩贏就結束(寫出來會很醜)
             return
         else:
             for player in players:
-                if player.min_points <= 17:
+                if player.min_points < 17:
                     player.add_card(card_generator.get_card())
     # 繼續下一輪 遞迴
     return play(players, card_generator)
@@ -84,7 +80,7 @@ def play(players, card_generator):
 if __name__ == '__main__':
     # Test game
     test_card_lists = [
-        ["A", "A", "A", "A", "K", "2"],
+        ["A", "A", "A", "A", "K", "8", "6", "5"],
 
         ["A", "5", "A", "J"],
         ["5", "A", "A", "J"],
